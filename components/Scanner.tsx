@@ -14,14 +14,13 @@ export default function Scanner({ onDetected }: ScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
 
-  // Estados do upload com zoom/pan
+  // Estados do zoom/pan
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showCrop, setShowCrop] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const originalImageRef = useRef<HTMLImageElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imageElementRef = useRef<HTMLImageElement>(null);
-  const transformRef = useRef<any>(null);
+  const transformWrapperRef = useRef<any>(null);
 
   // Limpeza da câmera
   useEffect(() => {
@@ -102,73 +101,86 @@ export default function Scanner({ onDetected }: ScannerProps) {
     return text;
   };
 
-  // ========== EXTRAIR REGIÃO CENTRAL ==========
+  // ========== EXTRAÇÃO DA REGIÃO CENTRAL USANDO CANVAS OCULTO ==========
   const detectCentralRegion = async () => {
-    if (!containerRef.current || !imageElementRef.current) return;
+    if (!containerRef.current || !imageElementRef.current) {
+      alert('Imagem não carregada corretamente.');
+      return;
+    }
+
     setProcessing(true);
     try {
       const container = containerRef.current;
       const imgElement = imageElementRef.current;
+      const wrapper = transformWrapperRef.current;
 
-      // Obtém a posição e tamanho do quadrado verde central (relativo ao container)
+      if (!wrapper) throw new Error('TransformWrapper não inicializado');
+
+      // Obtém o estado atual da transformação (escala e posição)
+      const { scale, positionX, positionY } = wrapper.state;
+      
+      // Dimensões do container (área visível)
       const containerRect = container.getBoundingClientRect();
-      const boxSize = Math.min(containerRect.width, containerRect.height) * 0.6;
-      const boxX = (containerRect.width - boxSize) / 2;
-      const boxY = (containerRect.height - boxSize) / 2;
-
-      // Obtém a transformação atual da imagem (escala, posição) via a biblioteca
-      const instance = transformRef.current;
-      if (!instance) return;
-      const scale = instance.state.scale;
-      const positionX = instance.state.positionX;
-      const positionY = instance.state.positionY;
-
-      // A imagem original tem seu próprio tamanho natural
+      const containerWidth = containerRect.width;
+      const containerHeight = containerRect.height;
+      
+      // Tamanho original da imagem
       const imgNaturalWidth = imgElement.naturalWidth;
       const imgNaturalHeight = imgElement.naturalHeight;
-      // Tamanho da imagem exibida no container (já com zoom e pan)
+      
+      // Tamanho da imagem exibida após escala
       const imgDisplayWidth = imgNaturalWidth * scale;
       const imgDisplayHeight = imgNaturalHeight * scale;
-      // Posição da imagem no container (levando em conta o pan)
-      const imgLeft = positionX + (containerRect.width - imgDisplayWidth) / 2;
-      const imgTop = positionY + (containerRect.height - imgDisplayHeight) / 2;
-
+      
+      // Posição da imagem dentro do container (considerando o pan)
+      const imgLeft = positionX + (containerWidth - imgDisplayWidth) / 2;
+      const imgTop = positionY + (containerHeight - imgDisplayHeight) / 2;
+      
+      // Tamanho do quadrado verde (60% do menor lado do container)
+      const boxSize = Math.min(containerWidth, containerHeight) * 0.6;
+      const boxX = (containerWidth - boxSize) / 2;
+      const boxY = (containerHeight - boxSize) / 2;
+      
       // Coordenadas da região central em relação à imagem original
       const relativeX = (boxX - imgLeft) / scale;
       const relativeY = (boxY - imgTop) / scale;
-
-      if (relativeX < 0 || relativeY < 0 || relativeX + boxSize/scale > imgNaturalWidth || relativeY + boxSize/scale > imgNaturalHeight) {
-        alert('A área central está fora da imagem. Centralize a imagem e tente novamente.');
+      const relativeW = boxSize / scale;
+      const relativeH = boxSize / scale;
+      
+      // Valida se a região está dentro da imagem original
+      if (relativeX < 0 || relativeY < 0 || relativeX + relativeW > imgNaturalWidth || relativeY + relativeH > imgNaturalHeight) {
+        alert('A área de leitura está fora da imagem. Centralize a imagem e ajuste o zoom para que o código fique dentro do quadrado verde.');
         setProcessing(false);
         return;
       }
-
-      // Cria um canvas temporário para recortar a região
+      
+      // Cria um canvas temporário para extrair a região exata
       const canvas = document.createElement('canvas');
       canvas.width = boxSize;
       canvas.height = boxSize;
       const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error();
-
+      if (!ctx) throw new Error('Não foi possível criar canvas');
+      
       // Desenha a parte correspondente da imagem original
-      const imgBitmap = await createImageBitmap(imgElement);
       ctx.drawImage(
-        imgBitmap,
-        relativeX, relativeY, boxSize / scale, boxSize / scale,
+        imgElement,
+        relativeX, relativeY, relativeW, relativeH,
         0, 0, boxSize, boxSize
       );
-
-      const croppedBitmap = await createImageBitmap(canvas);
-      const decoded = await detectFromImageBitmap(croppedBitmap);
+      
+      // Converte o canvas para ImageBitmap e tenta detectar
+      const bitmap = await createImageBitmap(canvas);
+      const decoded = await detectFromImageBitmap(bitmap);
+      
       if (decoded) {
         onDetected(decoded);
         fecharPreview();
       } else {
-        alert('Nenhum código detectado na área central. Ajuste a posição/zoom e tente novamente.');
+        alert('Nenhum código detectado na área verde. Tente ajustar o zoom e posição para que o código fique bem nítido dentro do quadrado.');
       }
     } catch (err) {
-      console.error(err);
-      alert('Erro ao processar a região central.');
+      console.error('Erro detalhado:', err);
+      alert('Erro ao processar a região central. Verifique o console para mais detalhes.');
     } finally {
       setProcessing(false);
     }
@@ -178,8 +190,6 @@ export default function Scanner({ onDetected }: ScannerProps) {
     setImagePreviewUrl(null);
     setShowCrop(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    originalImageRef.current = null;
-    // Reset da transformação será feito pela lib ao recriar o componente
   };
 
   // ========== UPLOAD E TENTATIVA AUTOMÁTICA ==========
@@ -191,6 +201,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
     const imageUrl = URL.createObjectURL(file);
     setImagePreviewUrl(imageUrl);
 
+    // Tentativa de detecção automática (imagem inteira)
     let decoded: string | null = null;
     try {
       const img = new Image();
@@ -215,26 +226,21 @@ export default function Scanner({ onDetected }: ScannerProps) {
       return;
     }
 
-    // Falha: abre modo manual
+    // Se falhou, abre o modo manual com zoom/pan
     setProcessing(false);
     setShowCrop(true);
-    const img = new Image();
-    img.onload = () => {
-      originalImageRef.current = img;
-      // Aguarda o DOM do modal ser montado
-      setTimeout(() => {
-        if (imageElementRef.current) {
-          imageElementRef.current.src = imageUrl;
-        }
-      }, 50);
-    };
-    img.src = imageUrl;
+    // Aguarda o elemento img ser montado no modal
+    setTimeout(() => {
+      if (imageElementRef.current) {
+        imageElementRef.current.src = imageUrl;
+      }
+    }, 50);
   };
 
   // ========== RENDER ==========
   return (
     <div className="flex flex-col items-center gap-3">
-      {/* Modal de ajuste com zoom/pan via biblioteca especializada */}
+      {/* Modal de ajuste manual */}
       {showCrop && imagePreviewUrl && (
         <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center p-4">
           <h3 className="text-white text-lg mb-2 text-center">
@@ -246,7 +252,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
             style={{ touchAction: 'none' }}
           >
             <TransformWrapper
-              ref={transformRef}
+              ref={transformWrapperRef}
               initialScale={1}
               minScale={0.5}
               maxScale={5}
@@ -265,13 +271,14 @@ export default function Scanner({ onDetected }: ScannerProps) {
                   alt="Preview"
                   style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                   draggable={false}
+                  crossOrigin="anonymous"
                 />
               </TransformComponent>
             </TransformWrapper>
-            {/* Quadrado verde central flutuante (máscara) */}
+            {/* Máscara central (quadrado verde com fundo escuro ao redor) */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
               <div
-                className="border-4 border-green-500 shadow-[0_0_0_9999px_rgba(0,0,0,0.7)]"
+                className="border-4 border-green-500"
                 style={{
                   width: '60%',
                   height: '60%',
@@ -296,7 +303,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
             </button>
           </div>
           <p className="text-gray-300 text-sm mt-2">
-            • 1 dedo: arrastar • 2 dedos: zoom (ou use os botões abaixo)
+            • 1 dedo: arrastar • 2 dedos: zoom
           </p>
         </div>
       )}
