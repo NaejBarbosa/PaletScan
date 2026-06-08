@@ -60,6 +60,93 @@ export default function Scanner({ onDetected }: ScannerProps) {
     }
   };
 
+  // ========== PRÉ-PROCESSAMENTO AVANÇADO ==========
+  const preprocessImage = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return canvas;
+
+    // 1. Equalização de histograma (aumenta contraste)
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    const histogram = new Array(256).fill(0);
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+      const idx = Math.floor(gray);
+      histogram[idx]++;
+    }
+    let cdf = 0;
+    const total = canvas.width * canvas.height;
+    const equalized = new Array(256);
+    for (let i = 0; i < 256; i++) {
+      cdf += histogram[i];
+      equalized[i] = Math.floor((cdf / total) * 255);
+    }
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+      const newGray = equalized[Math.floor(gray)];
+      data[i] = newGray;
+      data[i+1] = newGray;
+      data[i+2] = newGray;
+    }
+
+    // 2. Aplicar nitidez (sharpening) para realçar bordas
+    const sharpened = new Uint8ClampedArray(data.length);
+    const kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+    const width = canvas.width;
+    const height = canvas.height;
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        let sum = 0;
+        for (let ky = -1; ky <= 1; ky++) {
+          for (let kx = -1; kx <= 1; kx++) {
+            const idx = ((y + ky) * width + (x + kx)) * 4;
+            const val = data[idx];
+            sum += val * kernel[(ky + 1) * 3 + (kx + 1)];
+          }
+        }
+        const idx = (y * width + x) * 4;
+        sharpened[idx] = Math.min(255, Math.max(0, sum));
+        sharpened[idx+1] = sharpened[idx];
+        sharpened[idx+2] = sharpened[idx];
+        sharpened[idx+3] = 255;
+      }
+    }
+
+    // 3. Binarização adaptativa (threshold local)
+    const binary = new Uint8ClampedArray(sharpened.length);
+    const blockSize = 15;
+    const constant = 10;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        let sum = 0;
+        let count = 0;
+        for (let dy = -blockSize/2; dy <= blockSize/2; dy++) {
+          for (let dx = -blockSize/2; dx <= blockSize/2; dx++) {
+            const ny = y + dy;
+            const nx = x + dx;
+            if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
+              const idx = (ny * width + nx) * 4;
+              sum += sharpened[idx];
+              count++;
+            }
+          }
+        }
+        const threshold = (sum / count) - constant;
+        const idx = (y * width + x) * 4;
+        const value = sharpened[idx] > threshold ? 255 : 0;
+        binary[idx] = value;
+        binary[idx+1] = value;
+        binary[idx+2] = value;
+        binary[idx+3] = 255;
+      }
+    }
+
+    const resultImageData = new ImageData(binary, width, height);
+    ctx.putImageData(resultImageData, 0, 0);
+    return canvas;
+  };
+
+  // ========== DETECÇÃO COM MÚLTIPLAS TENTATIVAS ==========
   const detectWithNative = async (imageBitmap: ImageBitmap): Promise<string | null> => {
     if (!('BarcodeDetector' in window)) return null;
     try {
@@ -83,27 +170,25 @@ export default function Scanner({ onDetected }: ScannerProps) {
     }
   };
 
-  const preprocessImage = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return canvas;
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    let sum = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      const gray = 0.34 * data[i] + 0.5 * data[i+1] + 0.16 * data[i+2];
-      sum += gray;
+  const detectWithMultipleUpscaling = async (canvas: HTMLCanvasElement): Promise<string | null> => {
+    // Tenta várias escalas (original, 2x, 3x) para melhorar a detecção
+    const scales = [1, 2, 3];
+    for (const scale of scales) {
+      const scaledCanvas = document.createElement('canvas');
+      scaledCanvas.width = canvas.width * scale;
+      scaledCanvas.height = canvas.height * scale;
+      const ctx = scaledCanvas.getContext('2d');
+      ctx?.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+      
+      let bitmap = await createImageBitmap(scaledCanvas);
+      let decoded = await detectWithNative(bitmap);
+      if (decoded) return decoded;
+      
+      const dataUrl = scaledCanvas.toDataURL();
+      decoded = await detectWithZXing(dataUrl);
+      if (decoded) return decoded;
     }
-    const mean = sum / (canvas.width * canvas.height);
-    const threshold = mean * 0.8;
-    for (let i = 0; i < data.length; i += 4) {
-      const gray = 0.34 * data[i] + 0.5 * data[i+1] + 0.16 * data[i+2];
-      const bw = gray > threshold ? 255 : 0;
-      data[i] = bw;
-      data[i+1] = bw;
-      data[i+2] = bw;
-    }
-    ctx.putImageData(imageData, 0, 0);
-    return canvas;
+    return null;
   };
 
   const detectCentralRegion = async () => {
@@ -112,7 +197,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
       return;
     }
     setProcessing(true);
-    setDebugMessage("🔍 Processando região central...");
+    setDebugMessage("🔍 Processando com pré-processamento avançado...");
     try {
       const container = containerRef.current;
       const img = imageElementRef.current;
@@ -160,41 +245,45 @@ export default function Scanner({ onDetected }: ScannerProps) {
         return;
       }
 
+      // Extrai a região central em alta resolução
       const canvas = document.createElement('canvas');
       canvas.width = boxSize;
       canvas.height = boxSize;
       const ctx = canvas.getContext('2d');
       ctx?.drawImage(img, relX, relY, relW, relH, 0, 0, boxSize, boxSize);
 
-      let bitmap = await createImageBitmap(canvas);
-      let decoded = await detectWithNative(bitmap);
+      // Aplica pré-processamento avançado
+      const processedCanvas = preprocessImage(canvas);
+      
+      // Tenta detectar com múltiplas escalas
+      let decoded = await detectWithMultipleUpscaling(processedCanvas);
+      
+      // Se ainda falhou, tenta uma última vez com o canvas original (sem redimensionar muito)
+      if (!decoded) {
+        setDebugMessage("🎨 Última tentativa: binarização extrema...");
+        const extremeCanvas = document.createElement('canvas');
+        extremeCanvas.width = canvas.width;
+        extremeCanvas.height = canvas.height;
+        const extCtx = extremeCanvas.getContext('2d');
+        extCtx?.drawImage(canvas, 0, 0);
+        const imageData = extCtx?.getImageData(0, 0, canvas.width, canvas.height);
+        if (imageData) {
+          const data = imageData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+            const threshold = 128;
+            const bw = gray > threshold ? 255 : 0;
+            data[i] = bw;
+            data[i+1] = bw;
+            data[i+2] = bw;
+          }
+          extCtx?.putImageData(imageData, 0, 0);
+          decoded = await detectWithMultipleUpscaling(extremeCanvas);
+        }
+      }
+
       if (decoded) {
         setDebugMessage(`✅ Sucesso: ${decoded}`);
-        onDetected(decoded);
-        fecharPreview();
-        return;
-      }
-
-      const dataUrl = canvas.toDataURL();
-      decoded = await detectWithZXing(dataUrl);
-      if (decoded) {
-        setDebugMessage(`✅ Sucesso (ZXing): ${decoded}`);
-        onDetected(decoded);
-        fecharPreview();
-        return;
-      }
-
-      setDebugMessage("🎨 Tentando com pré-processamento...");
-      const processedCanvas = preprocessImage(canvas);
-      const processedBitmap = await createImageBitmap(processedCanvas);
-      decoded = await detectWithNative(processedBitmap);
-      if (!decoded) {
-        const processedUrl = processedCanvas.toDataURL();
-        decoded = await detectWithZXing(processedUrl);
-      }
-
-      if (decoded) {
-        setDebugMessage(`✅ Sucesso após pré-processamento: ${decoded}`);
         onDetected(decoded);
         fecharPreview();
       } else {
@@ -234,10 +323,11 @@ export default function Scanner({ onDetected }: ScannerProps) {
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
       ctx?.drawImage(img, 0, 0);
-      const bitmap = await createImageBitmap(canvas);
+      const processed = preprocessImage(canvas);
+      const bitmap = await createImageBitmap(processed);
       decoded = await detectWithNative(bitmap);
       if (!decoded) {
-        const dataUrl = canvas.toDataURL();
+        const dataUrl = processed.toDataURL();
         decoded = await detectWithZXing(dataUrl);
       }
     } catch (err) {
