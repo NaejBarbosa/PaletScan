@@ -1,4 +1,4 @@
-// components/Scanner.tsx
+// components/Scanner.tsx - Versão otimizada e focada em Data Matrix
 import { useRef, useState, useEffect } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/library';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
@@ -27,6 +27,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
     };
   }, []);
 
+  // ========== CÂMERA ==========
   const stopScanning = async () => {
     if (readerRef.current) {
       readerRef.current.reset();
@@ -60,100 +61,18 @@ export default function Scanner({ onDetected }: ScannerProps) {
     }
   };
 
-  // ========== PRÉ-PROCESSAMENTO AVANÇADO ==========
-  const preprocessImage = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return canvas;
-
-    // 1. Equalização de histograma (aumenta contraste)
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    const histogram = new Array(256).fill(0);
-    for (let i = 0; i < data.length; i += 4) {
-      const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-      const idx = Math.floor(gray);
-      histogram[idx]++;
-    }
-    let cdf = 0;
-    const total = canvas.width * canvas.height;
-    const equalized = new Array(256);
-    for (let i = 0; i < 256; i++) {
-      cdf += histogram[i];
-      equalized[i] = Math.floor((cdf / total) * 255);
-    }
-    for (let i = 0; i < data.length; i += 4) {
-      const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-      const newGray = equalized[Math.floor(gray)];
-      data[i] = newGray;
-      data[i+1] = newGray;
-      data[i+2] = newGray;
-    }
-
-    // 2. Aplicar nitidez (sharpening) para realçar bordas
-    const sharpened = new Uint8ClampedArray(data.length);
-    const kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
-    const width = canvas.width;
-    const height = canvas.height;
-    for (let y = 1; y < height - 1; y++) {
-      for (let x = 1; x < width - 1; x++) {
-        let sum = 0;
-        for (let ky = -1; ky <= 1; ky++) {
-          for (let kx = -1; kx <= 1; kx++) {
-            const idx = ((y + ky) * width + (x + kx)) * 4;
-            const val = data[idx];
-            sum += val * kernel[(ky + 1) * 3 + (kx + 1)];
-          }
-        }
-        const idx = (y * width + x) * 4;
-        sharpened[idx] = Math.min(255, Math.max(0, sum));
-        sharpened[idx+1] = sharpened[idx];
-        sharpened[idx+2] = sharpened[idx];
-        sharpened[idx+3] = 255;
-      }
-    }
-
-    // 3. Binarização adaptativa (threshold local)
-    const binary = new Uint8ClampedArray(sharpened.length);
-    const blockSize = 15;
-    const constant = 10;
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        let sum = 0;
-        let count = 0;
-        for (let dy = -blockSize/2; dy <= blockSize/2; dy++) {
-          for (let dx = -blockSize/2; dx <= blockSize/2; dx++) {
-            const ny = y + dy;
-            const nx = x + dx;
-            if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
-              const idx = (ny * width + nx) * 4;
-              sum += sharpened[idx];
-              count++;
-            }
-          }
-        }
-        const threshold = (sum / count) - constant;
-        const idx = (y * width + x) * 4;
-        const value = sharpened[idx] > threshold ? 255 : 0;
-        binary[idx] = value;
-        binary[idx+1] = value;
-        binary[idx+2] = value;
-        binary[idx+3] = 255;
-      }
-    }
-
-    const resultImageData = new ImageData(binary, width, height);
-    ctx.putImageData(resultImageData, 0, 0);
-    return canvas;
-  };
-
-  // ========== DETECÇÃO COM MÚLTIPLAS TENTATIVAS ==========
+  // ========== DETECÇÃO DIRETA (sem pré-processamento pesado) ==========
   const detectWithNative = async (imageBitmap: ImageBitmap): Promise<string | null> => {
     if (!('BarcodeDetector' in window)) return null;
     try {
       const detector = new (window as any).BarcodeDetector({ formats: ['qr_code', 'data_matrix', 'aztec', 'pdf417'] });
       const barcodes = await detector.detect(imageBitmap);
-      return barcodes[0]?.rawValue || null;
-    } catch {
+      if (barcodes.length > 0 && barcodes[0].rawValue) {
+        return barcodes[0].rawValue;
+      }
+      return null;
+    } catch (err) {
+      console.warn("BarcodeDetector error", err);
       return null;
     }
   };
@@ -163,46 +82,27 @@ export default function Scanner({ onDetected }: ScannerProps) {
     try {
       const result = await reader.decodeFromImageUrl(imageUrl);
       return result ? result.getText() : null;
-    } catch {
+    } catch (err) {
       return null;
     } finally {
       reader.reset();
     }
   };
 
-  const detectWithMultipleUpscaling = async (canvas: HTMLCanvasElement): Promise<string | null> => {
-    // Tenta várias escalas (original, 2x, 3x) para melhorar a detecção
-    const scales = [1, 2, 3];
-    for (const scale of scales) {
-      const scaledCanvas = document.createElement('canvas');
-      scaledCanvas.width = canvas.width * scale;
-      scaledCanvas.height = canvas.height * scale;
-      const ctx = scaledCanvas.getContext('2d');
-      ctx?.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
-      
-      let bitmap = await createImageBitmap(scaledCanvas);
-      let decoded = await detectWithNative(bitmap);
-      if (decoded) return decoded;
-      
-      const dataUrl = scaledCanvas.toDataURL();
-      decoded = await detectWithZXing(dataUrl);
-      if (decoded) return decoded;
-    }
-    return null;
-  };
-
+  // ========== EXTRAÇÃO DA REGIÃO CENTRAL (sem processamento adicional) ==========
   const detectCentralRegion = async () => {
     if (!containerRef.current || !imageElementRef.current) {
       setDebugMessage("❌ Elementos não carregados");
       return;
     }
     setProcessing(true);
-    setDebugMessage("🔍 Processando com pré-processamento avançado...");
+    setDebugMessage("🔍 Lendo região central...");
     try {
       const container = containerRef.current;
       const img = imageElementRef.current;
       const wrapper = transformWrapperRef.current;
 
+      // Obtém transformação
       const transformStyle = window.getComputedStyle(img).transform;
       let scale = 1, translateX = 0, translateY = 0;
       if (transformStyle && transformStyle !== 'none') {
@@ -237,63 +137,44 @@ export default function Scanner({ onDetected }: ScannerProps) {
       const relW = boxSize / scale;
       const relH = boxSize / scale;
 
-      setDebugMessage(`📐 Área: X=${Math.round(relX)} Y=${Math.round(relY)} ${Math.round(relW)}x${Math.round(relH)} | Img: ${imgW}x${imgH}`);
-
       if (relX < 0 || relY < 0 || relX+relW > imgW || relY+relH > imgH) {
         setDebugMessage("⚠️ Área verde fora da imagem. Centralize e ajuste o zoom.");
         setProcessing(false);
         return;
       }
 
-      // Extrai a região central em alta resolução
+      // Cria canvas com a região recortada (em tamanho original da região)
       const canvas = document.createElement('canvas');
-      canvas.width = boxSize;
-      canvas.height = boxSize;
+      canvas.width = Math.max(200, Math.min(boxSize, 800)); // limita para não ficar enorme
+      canvas.height = Math.max(200, Math.min(boxSize, 800));
       const ctx = canvas.getContext('2d');
-      ctx?.drawImage(img, relX, relY, relW, relH, 0, 0, boxSize, boxSize);
-
-      // Aplica pré-processamento avançado
-      const processedCanvas = preprocessImage(canvas);
+      if (!ctx) throw new Error();
       
-      // Tenta detectar com múltiplas escalas
-      let decoded = await detectWithMultipleUpscaling(processedCanvas);
+      // Desenha a região já redimensionada para um tamanho razoável (ajuda na performance)
+      ctx.drawImage(img, relX, relY, relW, relH, 0, 0, canvas.width, canvas.height);
       
-      // Se ainda falhou, tenta uma última vez com o canvas original (sem redimensionar muito)
+      // Tenta detectar com API nativa
+      const bitmap = await createImageBitmap(canvas);
+      let decoded = await detectWithNative(bitmap);
+      
+      // Fallback para ZXing
       if (!decoded) {
-        setDebugMessage("🎨 Última tentativa: binarização extrema...");
-        const extremeCanvas = document.createElement('canvas');
-        extremeCanvas.width = canvas.width;
-        extremeCanvas.height = canvas.height;
-        const extCtx = extremeCanvas.getContext('2d');
-        extCtx?.drawImage(canvas, 0, 0);
-        const imageData = extCtx?.getImageData(0, 0, canvas.width, canvas.height);
-        if (imageData) {
-          const data = imageData.data;
-          for (let i = 0; i < data.length; i += 4) {
-            const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-            const threshold = 128;
-            const bw = gray > threshold ? 255 : 0;
-            data[i] = bw;
-            data[i+1] = bw;
-            data[i+2] = bw;
-          }
-          extCtx?.putImageData(imageData, 0, 0);
-          decoded = await detectWithMultipleUpscaling(extremeCanvas);
-        }
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        decoded = await detectWithZXing(dataUrl);
       }
 
       if (decoded) {
-        setDebugMessage(`✅ Sucesso: ${decoded}`);
+        setDebugMessage(`✅ Código lido: ${decoded.substring(0, 30)}...`);
         onDetected(decoded);
         fecharPreview();
       } else {
-        setDebugMessage("❌ Nenhum código detectado. Tente mais zoom e centralização.");
+        setDebugMessage("❌ Nenhum código detectado. Aumente o zoom e centralize bem o código no quadrado verde.");
       }
     } catch (err: any) {
       setDebugMessage(`💥 Erro: ${err.message || err}`);
     } finally {
       setProcessing(false);
-      setTimeout(() => setDebugMessage(null), 4000);
+      setTimeout(() => setDebugMessage(null), 5000);
     }
   };
 
@@ -304,30 +185,39 @@ export default function Scanner({ onDetected }: ScannerProps) {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  // ========== UPLOAD DA IMAGEM (detecção automática simples) ==========
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setProcessing(true);
-    setDebugMessage("📤 Carregando imagem...");
+    setDebugMessage("📤 Carregando...");
     const imageUrl = URL.createObjectURL(file);
     setImagePreviewUrl(imageUrl);
 
+    // Tenta detectar automaticamente na imagem inteira (apenas uma tentativa rápida)
     let decoded: string | null = null;
     try {
       const img = new Image();
       img.src = imageUrl;
       await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
+      // Reduz a imagem para no máximo 1000px para acelerar
+      const maxDim = 1000;
+      let width = img.width, height = img.height;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.floor(width * scale);
+        height = Math.floor(height * scale);
+      }
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext('2d');
-      ctx?.drawImage(img, 0, 0);
-      const processed = preprocessImage(canvas);
-      const bitmap = await createImageBitmap(processed);
+      ctx?.drawImage(img, 0, 0, width, height);
+      const bitmap = await createImageBitmap(canvas);
       decoded = await detectWithNative(bitmap);
       if (!decoded) {
-        const dataUrl = processed.toDataURL();
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
         decoded = await detectWithZXing(dataUrl);
       }
     } catch (err) {
@@ -343,20 +233,22 @@ export default function Scanner({ onDetected }: ScannerProps) {
       return;
     }
 
+    // Se falhou, abre modo manual
     setProcessing(false);
     setShowCrop(true);
     setTimeout(() => {
       if (imageElementRef.current) {
         imageElementRef.current.src = imageUrl;
-        setDebugMessage("🔎 Ajuste o código no quadrado verde e clique em Detectar");
+        setDebugMessage("🔎 Ajuste o código no quadrado verde e clique em DETECTAR");
       }
     }, 50);
   };
 
+  // ========== RENDER ==========
   return (
     <div className="flex flex-col items-center gap-3">
       {debugMessage && (
-        <div className="fixed bottom-4 left-4 right-4 bg-yellow-800 text-white p-3 rounded-lg z-50 text-center text-sm shadow-lg">
+        <div className="fixed bottom-4 left-4 right-4 bg-black bg-opacity-90 text-white p-3 rounded-lg z-50 text-center text-sm shadow-lg border border-yellow-500">
           {debugMessage}
         </div>
       )}
@@ -412,7 +304,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
               disabled={processing}
               className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
             >
-              {processing ? 'Detectando...' : 'Detectar na área verde'}
+              {processing ? 'Lendo...' : '🔍 DETECTAR'}
             </button>
             <button
               onClick={fecharPreview}
@@ -450,7 +342,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
           className="px-4 py-2 bg-blue-600 text-white rounded"
           disabled={processing || scanning}
         >
-          {processing ? 'Processando...' : 'Ler da Galeria'}
+          {processing ? 'Aguarde...' : '📁 Ler da Galeria'}
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
       </div>
