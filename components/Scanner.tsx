@@ -220,43 +220,47 @@ export default function Scanner({ onDetected }: ScannerProps) {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-5">
       {debugMessage && (
-        <div className="fixed bottom-4 left-4 right-4 bg-black bg-opacity-80 text-white p-3 rounded-lg z-50 text-center text-sm">
+        <div className="fixed bottom-6 left-6 right-6 bg-black/80 backdrop-blur-sm text-white p-3 rounded-xl z-50 text-center text-sm font-medium shadow-xl">
           {debugMessage}
         </div>
       )}
       {showCrop && imagePreviewUrl && (
-        <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center p-4">
-          <h3 className="text-white text-lg mb-2">Posicione o código no quadrado verde</h3>
-          <div ref={containerRef} className="relative w-full max-w-lg h-[60vh] bg-black rounded-lg overflow-hidden">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col items-center justify-center p-4">
+          <h3 className="text-white text-xl mb-4 font-semibold">Posicione o código no quadrado verde</h3>
+          <div ref={containerRef} className="relative w-full max-w-lg h-[60vh] bg-black/50 rounded-2xl overflow-hidden border-2 border-white/20">
             <TransformWrapper ref={transformWrapperRef} initialScale={1} minScale={0.5} maxScale={5} centerOnInit={true} limitToBounds={true}>
               <TransformComponent>
                 <img ref={imageElementRef} src={imagePreviewUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
               </TransformComponent>
             </TransformWrapper>
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="border-4 border-green-500" style={{ width: '60%', height: '60%', boxShadow: '0 0 0 9999px rgba(0,0,0,0.75)' }} />
+              <div className="border-4 border-green-500 rounded-xl" style={{ width: '60%', height: '60%', boxShadow: '0 0 0 9999px rgba(0,0,0,0.75)' }} />
             </div>
           </div>
-          <div className="flex gap-2 mt-4">
-            <button onClick={detectCentralRegion} disabled={processing} className="px-4 py-2 bg-green-600 text-white rounded">🔍 DETECTAR</button>
-            <button onClick={fecharPreview} className="px-4 py-2 bg-red-600 text-white rounded">Cancelar</button>
+          <div className="flex gap-4 mt-6">
+            <button onClick={detectCentralRegion} disabled={processing} className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl transition-all transform hover:scale-105 shadow-lg">
+              🔍 DETECTAR
+            </button>
+            <button onClick={fecharPreview} className="px-6 py-2 bg-red-500/80 hover:bg-red-600/80 text-white font-semibold rounded-xl transition-all">
+              Cancelar
+            </button>
           </div>
         </div>
       )}
-      <video ref={videoRef} className="w-full rounded-lg border bg-black" style={{ aspectRatio: '4/3' }} playsInline autoPlay />
-      <div className="flex gap-3 mt-4 justify-center">
+      <video ref={videoRef} className="w-full rounded-xl border-2 border-gray-600 shadow-inner" style={{ aspectRatio: '4/3' }} playsInline autoPlay />
+      <div className="flex flex-wrap gap-4 mt-6 justify-center">
         {!scanning ? (
-          <button onClick={startScanning} className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium" disabled={processing}>
+          <button onClick={startScanning} className="px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all duration-200 font-medium shadow-md flex items-center gap-2" disabled={processing}>
             ▶ Iniciar Scanner
           </button>
         ) : (
-          <button onClick={stopScanning} className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium" disabled={processing}>
+          <button onClick={stopScanning} className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-xl transition-all duration-200 font-medium shadow-md flex items-center gap-2" disabled={processing}>
             ⏹ Parar Scanner
           </button>
         )}
-        <button onClick={() => fileInputRef.current?.click()} className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium" disabled={processing || scanning}>
+        <button onClick={() => fileInputRef.current?.click()} className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl transition-all duration-200 font-medium shadow-md flex items-center gap-2" disabled={processing || scanning}>
           📁 Ler da Galeria
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />

@@ -33,7 +33,7 @@ function HomeContent() {
   const [confirmacao, setConfirmacao] = useState<{
     ean: string;
     validade: string;
-    produto?: ProdutoValido;   // ✅ corrigido: era "produit"
+    produto?: ProdutoValido;
   } | null>(null);
   const [itensRegistrados, setItensRegistrados] = useState<ItemRegistrado[]>([]);
 
@@ -146,55 +146,75 @@ function HomeContent() {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* Cabeçalho com título e botão de tema */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-            Scanner de Produtos
-          </h1>
+    <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        {/* Header moderno */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+              Scanner de Produtos
+            </h1>
+            <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+              Leitura de Data Matrix e registro automático
+            </p>
+          </div>
           <button
             onClick={toggleTheme}
-            className={`p-2 rounded-full transition-all duration-200 ${
-              theme === 'dark' ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
+            className={`p-2 rounded-full transition-all duration-300 backdrop-blur-sm ${
+              theme === 'dark' 
+                ? 'bg-gray-800/80 text-yellow-400 hover:bg-gray-700/80' 
+                : 'bg-white/80 text-gray-700 hover:bg-gray-200/80'
+            } shadow-lg`}
             aria-label="Alternar tema"
           >
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
         </div>
 
-        {/* Scanner com fundo adaptado */}
-        <div className={`rounded-xl shadow-lg overflow-hidden ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+        {/* Card do Scanner com efeito glass */}
+        <div className={`rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm border ${
+          theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-white/80 border-gray-200'
+        } transition-all duration-300`}>
           <Scanner onDetected={handleQRCode} />
         </div>
 
-        {/* Modal de confirmação */}
+        {/* Modal de confirmação - modernizado */}
         {confirmacao && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className={`rounded-xl shadow-2xl max-w-md w-full p-6 ${theme === 'dark' ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'}`}>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">📦 Produto detectado</h2>
-              <div className={`mb-4 rounded-lg p-4 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                <p className="mb-1"><span className="font-semibold">EAN:</span> {confirmacao.ean}</p>
-                <p className="mb-1"><span className="font-semibold">Validade:</span> {confirmacao.validade}</p>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
+            <div className={`rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all duration-300 scale-100 ${
+              theme === 'dark' ? 'bg-gray-800/90 border border-gray-700' : 'bg-white/90 border border-gray-200'
+            } backdrop-blur-sm`}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
+                  <span className="text-white text-xl">📦</span>
+                </div>
+                <h2 className="text-2xl font-bold">Produto detectado</h2>
+              </div>
+              <div className={`mb-6 rounded-xl p-4 ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100/80'}`}>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="font-semibold">EAN:</span>
+                  <span className="font-mono">{confirmacao.ean}</span>
+                  <span className="font-semibold">Validade:</span>
+                  <span>{confirmacao.validade}</span>
+                </div>
                 {confirmacao.produto ? (
-                  <>
-                    <p className="mb-1"><span className="font-semibold">Marca:</span> {confirmacao.produto.marcaDescr}</p>
-                    <p className="mb-1"><span className="font-semibold">Produto:</span> {confirmacao.produto.produtoDescr}</p>
-                    <p><span className="font-semibold">Classe:</span> {confirmacao.produto.produtoClasse}</p>
-                  </>
+                  <div className="mt-3 pt-3 border-t border-gray-500/30">
+                    <p><span className="font-semibold">Marca:</span> {confirmacao.produto.marcaDescr}</p>
+                    <p className="mt-1"><span className="font-semibold">Produto:</span> {confirmacao.produto.produtoDescr}</p>
+                    <p className="mt-1"><span className="font-semibold">Classe:</span> {confirmacao.produto.produtoClasse}</p>
+                  </div>
                 ) : (
-                  <p className="text-red-500 font-semibold">⚠️ Produto não encontrado na base. Será necessário cadastro manual.</p>
+                  <p className="mt-3 text-red-400 font-semibold text-sm">⚠️ Produto não encontrado na base. Cadastro manual necessário.</p>
                 )}
               </div>
               <div className="flex flex-col gap-3">
-                <button onClick={handleGravar} className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition-colors">
+                <button onClick={handleGravar} className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg">
                   💾 Gravar no banco_cadastro
                 </button>
-                <button onClick={handleNovaLeitura} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-colors">
+                <button onClick={handleNovaLeitura} className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl transition-all duration-200">
                   📷 Nova leitura
                 </button>
-                <button onClick={handleDescartar} className="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 rounded-lg transition-colors">
+                <button onClick={handleDescartar} className="w-full bg-gray-500/80 hover:bg-gray-600/80 text-white font-semibold py-3 rounded-xl transition-all duration-200">
                   ❌ Descartar
                 </button>
               </div>
@@ -202,12 +222,24 @@ function HomeContent() {
           </div>
         )}
 
-        {/* Cadastro manual */}
+        {/* Cadastro manual em card moderno */}
         {modoManual && currentScan && (
-          <div className={`mt-6 rounded-xl shadow-lg p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-            <h2 className="text-xl font-semibold mb-3">Produto não encontrado na base</h2>
-            <p className="mb-1"><strong>EAN:</strong> {currentScan.ean}</p>
-            <p className="mb-4"><strong>Validade calculada:</strong> {currentScan.validade}</p>
+          <div className={`mt-8 rounded-2xl shadow-xl p-6 border ${
+            theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-white/80 border-gray-200'
+          } backdrop-blur-sm transition-all duration-300`}>
+            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+              <span className="text-amber-400">⚠️</span> Produto não encontrado na base
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div className={`p-3 rounded-xl ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
+                <span className="text-xs uppercase tracking-wide opacity-70">EAN lido</span>
+                <p className="font-mono text-lg font-bold">{currentScan.ean}</p>
+              </div>
+              <div className={`p-3 rounded-xl ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
+                <span className="text-xs uppercase tracking-wide opacity-70">Validade calculada</span>
+                <p className="text-lg font-bold">{currentScan.validade}</p>
+              </div>
+            </div>
             <AutocompleteManual
               produtosValidos={produtosValidos}
               onSelect={handleManualSubmit}
@@ -216,35 +248,39 @@ function HomeContent() {
           </div>
         )}
 
-        {/* Tabela de produtos registrados */}
+        {/* Tabela de registros com design clean */}
         {itensRegistrados.length > 0 && (
-          <div className={`mt-8 rounded-xl shadow-lg p-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-            <h2 className="text-xl font-bold mb-3">📋 Produtos registrados nesta sessão</h2>
+          <div className={`mt-10 rounded-2xl shadow-xl p-4 border ${
+            theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-white/80 border-gray-200'
+          } backdrop-blur-sm transition-all duration-300`}>
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-blue-400">📋</span> Produtos registrados nesta sessão
+            </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm border-collapse">
-                <thead className={theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}>
+              <table className="min-w-full text-sm">
+                <thead className={theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100/80'}>
                   <tr>
-                    <th className="border p-2">EAN</th>
-                    <th className="border p-2">Marca</th>
-                    <th className="border p-2">Produto</th>
-                    <th className="border p-2">Validade</th>
-                    <th className="border p-2">Data/Hora</th>
+                    <th className="px-4 py-2 text-left rounded-l-xl">EAN</th>
+                    <th className="px-4 py-2 text-left">Marca</th>
+                    <th className="px-4 py-2 text-left">Produto</th>
+                    <th className="px-4 py-2 text-left">Validade</th>
+                    <th className="px-4 py-2 text-left rounded-r-xl">Data/Hora</th>
                   </tr>
                 </thead>
                 <tbody>
                   {itensRegistrados.map((item) => (
-                    <tr key={item.id} className="border-t">
-                      <td className="border p-2 font-mono">{item.ean}</td>
-                      <td className="border p-2">{item.marcaDescr}</td>
-                      <td className="border p-2">{item.produtoDescr}</td>
-                      <td className="border p-2">{item.validade}</td>
-                      <td className="border p-2">{new Date(item.dataRegistro).toLocaleString()}</td>
+                    <tr key={item.id} className="border-t border-gray-500/20 hover:bg-white/5 transition-colors">
+                      <td className="px-4 py-2 font-mono text-xs">{item.ean}</td>
+                      <td className="px-4 py-2">{item.marcaDescr}</td>
+                      <td className="px-4 py-2">{item.produtoDescr}</td>
+                      <td className="px-4 py-2 font-medium">{item.validade}</td>
+                      <td className="px-4 py-2 text-xs opacity-80">{new Date(item.dataRegistro).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="text-xs mt-2 opacity-70">* Registros já salvos no banco_cadastro</p>
+            <p className="text-xs mt-4 opacity-60 text-center">* Registros salvos permanentemente no banco_cadastro</p>
           </div>
         )}
       </div>
@@ -259,3 +295,7 @@ export default function Home() {
     </ThemeProvider>
   );
 }
+
+/* Adicione no seu globals.css se quiser a animação fadeIn */
+/* @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+   .animate-fadeIn { animation: fadeIn 0.2s ease-out; } */
