@@ -1,4 +1,4 @@
-// components/Scanner.tsx (sem alertas, apenas chama onDetected)
+// components/Scanner.tsx
 import { useRef, useState, useEffect } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/library';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
@@ -46,8 +46,9 @@ export default function Scanner({ onDetected }: ScannerProps) {
         if (result && !processing) {
           const text = result.getText();
           if (text) {
+            alert(`[Scanner] Texto bruto capturado pela câmera: ${text}`);
             stopScanning();
-            onDetected(text); // sem alerta
+            onDetected(text);
           }
         }
       });
@@ -65,7 +66,10 @@ export default function Scanner({ onDetected }: ScannerProps) {
     try {
       const detector = new (window as any).BarcodeDetector({ formats: ['qr_code', 'data_matrix', 'aztec', 'pdf417'] });
       const barcodes = await detector.detect(imageBitmap);
-      return barcodes[0]?.rawValue || null;
+      if (barcodes.length > 0 && barcodes[0].rawValue) {
+        return barcodes[0].rawValue;
+      }
+      return null;
     } catch {
       return null;
     }
@@ -150,8 +154,9 @@ export default function Scanner({ onDetected }: ScannerProps) {
       }
 
       if (decoded) {
+        alert(`[Scanner] Texto bruto da região central: ${decoded}`);
         setDebugMessage(`✅ Texto: ${decoded.substring(0, 40)}...`);
-        onDetected(decoded); // sem alerta
+        onDetected(decoded);
         fecharPreview();
       } else {
         setDebugMessage("❌ Nenhum código detectado. Aumente o zoom e centralize bem o código.");
@@ -208,10 +213,11 @@ export default function Scanner({ onDetected }: ScannerProps) {
     }
 
     if (decoded) {
+      alert(`[Scanner] Texto bruto da imagem: ${decoded}`);
       URL.revokeObjectURL(imageUrl);
       setProcessing(false);
       setDebugMessage(null);
-      onDetected(decoded); // sem alerta
+      onDetected(decoded);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }

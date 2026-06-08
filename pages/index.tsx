@@ -54,11 +54,16 @@ export default function Home() {
   };
 
   const handleQRCode = (text: string) => {
+    // ALERTA DE DEPURAÇÃO: texto bruto recebido
+    alert(`[Index] Texto bruto recebido: ${text}`);
+    
     const dados = extrairDados(text);
     if (!dados) {
-      alert(`❌ Formato inválido\n\nTexto recebido:\n${text}`);
+      alert(`[Index] Formato inválido. Texto: ${text}`);
       return;
     }
+
+    alert(`[Index] Extraído: EAN=${dados.ean}, Validade=${dados.validade}`);
 
     const { ean, validade } = dados;
 
@@ -69,6 +74,7 @@ export default function Home() {
 
     const produtoEncontrado = produtosValidos.find((p) => p.produtoEan === ean);
     setConfirmacao({ ean, validade, produto: produtoEncontrado });
+    alert(`[Index] Exibindo modal de confirmação para EAN ${ean}`);
   };
 
   const handleConfirmacaoSalvar = async () => {
