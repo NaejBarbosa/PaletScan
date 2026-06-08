@@ -1,4 +1,4 @@
-// components/Scanner.tsx
+// components/Scanner.tsx (sem alertas, apenas chama onDetected)
 import { useRef, useState, useEffect } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/library';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
@@ -47,7 +47,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
           const text = result.getText();
           if (text) {
             stopScanning();
-            onDetected(text);
+            onDetected(text); // sem alerta
           }
         }
       });
@@ -65,10 +65,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
     try {
       const detector = new (window as any).BarcodeDetector({ formats: ['qr_code', 'data_matrix', 'aztec', 'pdf417'] });
       const barcodes = await detector.detect(imageBitmap);
-      if (barcodes.length > 0 && barcodes[0].rawValue) {
-        return barcodes[0].rawValue;
-      }
-      return null;
+      return barcodes[0]?.rawValue || null;
     } catch {
       return null;
     }
@@ -153,10 +150,8 @@ export default function Scanner({ onDetected }: ScannerProps) {
       }
 
       if (decoded) {
-        // EXIBE ALERTA COM O TEXTO BRUTO PARA DIAGNÓSTICO
-        alert(`✅ Código detectado!\n\nTexto bruto:\n${decoded}`);
         setDebugMessage(`✅ Texto: ${decoded.substring(0, 40)}...`);
-        onDetected(decoded);
+        onDetected(decoded); // sem alerta
         fecharPreview();
       } else {
         setDebugMessage("❌ Nenhum código detectado. Aumente o zoom e centralize bem o código.");
@@ -213,11 +208,10 @@ export default function Scanner({ onDetected }: ScannerProps) {
     }
 
     if (decoded) {
-      alert(`✅ Detecção automática!\n\nTexto bruto:\n${decoded}`);
       URL.revokeObjectURL(imageUrl);
       setProcessing(false);
       setDebugMessage(null);
-      onDetected(decoded);
+      onDetected(decoded); // sem alerta
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
