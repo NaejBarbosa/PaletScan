@@ -60,17 +60,50 @@ export default function Scanner({ onDetected }: ScannerProps) {
     }
   };
 
+  const detectWithNative = async (imageBitmap: ImageBitmap): Promise<string | null> => {
+    if (!('BarcodeDetector' in window)) return null;
+    try {
+      const detector = new (window as any).BarcodeDetector({ formats: ['qr_code', 'data_matrix', 'aztec', 'pdf417'] });
+      const barcodes = await detector.detect(imageBitmap);
+      return barcodes[0]?.rawValue || null;
+    } catch {
+      return null;
+    }
+  };
+
   const detectWithZXing = async (imageUrl: string): Promise<string | null> => {
     const reader = new BrowserMultiFormatReader();
     try {
       const result = await reader.decodeFromImageUrl(imageUrl);
       return result ? result.getText() : null;
-    } catch (err) {
-      console.warn("ZXing falhou", err);
+    } catch {
       return null;
     } finally {
       reader.reset();
     }
+  };
+
+  const preprocessImage = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return canvas;
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    let sum = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = 0.34 * data[i] + 0.5 * data[i+1] + 0.16 * data[i+2];
+      sum += gray;
+    }
+    const mean = sum / (canvas.width * canvas.height);
+    const threshold = mean * 0.8;
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = 0.34 * data[i] + 0.5 * data[i+1] + 0.16 * data[i+2];
+      const bw = gray > threshold ? 255 : 0;
+      data[i] = bw;
+      data[i+1] = bw;
+      data[i+2] = bw;
+    }
+    ctx.putImageData(imageData, 0, 0);
+    return canvas;
   };
 
   const detectCentralRegion = async () => {
@@ -85,81 +118,89 @@ export default function Scanner({ onDetected }: ScannerProps) {
       const img = imageElementRef.current;
       const wrapper = transformWrapperRef.current;
 
-      // Obtém transformação via CSS matrix
       const transformStyle = window.getComputedStyle(img).transform;
-      let scale = 1;
-      let translateX = 0;
-      let translateY = 0;
-
+      let scale = 1, translateX = 0, translateY = 0;
       if (transformStyle && transformStyle !== 'none') {
         const matrix = transformStyle.match(/matrix\(([^)]+)\)/);
         if (matrix && matrix[1]) {
           const values = matrix[1].split(',').map(parseFloat);
-          scale = Math.sqrt(values[0] * values[0] + values[1] * values[1]);
+          scale = Math.sqrt(values[0]*values[0] + values[1]*values[1]);
           translateX = values[4];
           translateY = values[5];
         }
-      } else if (wrapper && wrapper.state) {
+      } else if (wrapper?.state) {
         scale = wrapper.state.scale || 1;
         translateX = wrapper.state.positionX || 0;
         translateY = wrapper.state.positionY || 0;
       }
 
       const containerRect = container.getBoundingClientRect();
-      const containerWidth = containerRect.width;
-      const containerHeight = containerRect.height;
+      const cw = containerRect.width, ch = containerRect.height;
+      const imgW = img.naturalWidth, imgH = img.naturalHeight;
+      if (imgW === 0 || imgH === 0) throw new Error('Imagem não carregada');
 
-      const imgNaturalWidth = img.naturalWidth;
-      const imgNaturalHeight = img.naturalHeight;
-      if (imgNaturalWidth === 0 || imgNaturalHeight === 0) {
-        throw new Error('Imagem não carregada');
-      }
+      const dispW = imgW * scale, dispH = imgH * scale;
+      const left = translateX + (cw - dispW)/2;
+      const top = translateY + (ch - dispH)/2;
 
-      const imgDisplayWidth = imgNaturalWidth * scale;
-      const imgDisplayHeight = imgNaturalHeight * scale;
-      const imgLeft = translateX + (containerWidth - imgDisplayWidth) / 2;
-      const imgTop = translateY + (containerHeight - imgDisplayHeight) / 2;
+      const boxSize = Math.min(cw, ch) * 0.6;
+      const boxX = (cw - boxSize)/2;
+      const boxY = (ch - boxSize)/2;
 
-      const boxSize = Math.min(containerWidth, containerHeight) * 0.6;
-      const boxX = (containerWidth - boxSize) / 2;
-      const boxY = (containerHeight - boxSize) / 2;
+      const relX = (boxX - left) / scale;
+      const relY = (boxY - top) / scale;
+      const relW = boxSize / scale;
+      const relH = boxSize / scale;
 
-      const relativeX = (boxX - imgLeft) / scale;
-      const relativeY = (boxY - imgTop) / scale;
-      const relativeW = boxSize / scale;
-      const relativeH = boxSize / scale;
+      setDebugMessage(`📐 Área: X=${Math.round(relX)} Y=${Math.round(relY)} ${Math.round(relW)}x${Math.round(relH)} | Img: ${imgW}x${imgH}`);
 
-      setDebugMessage(`📐 Área: X=${relativeX.toFixed(0)} Y=${relativeY.toFixed(0)} W=${relativeW.toFixed(0)} H=${relativeH.toFixed(0)} | Img: ${imgNaturalWidth}x${imgNaturalHeight}`);
-
-      if (relativeX < 0 || relativeY < 0 || relativeX + relativeW > imgNaturalWidth || relativeY + relativeH > imgNaturalHeight) {
-        setDebugMessage(`⚠️ Área verde fora da imagem. Ajuste a posição/zoom.`);
+      if (relX < 0 || relY < 0 || relX+relW > imgW || relY+relH > imgH) {
+        setDebugMessage("⚠️ Área verde fora da imagem. Centralize e ajuste o zoom.");
         setProcessing(false);
         return;
       }
 
-      // Cria canvas em alta resolução
       const canvas = document.createElement('canvas');
       canvas.width = boxSize;
       canvas.height = boxSize;
       const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Sem contexto');
+      ctx?.drawImage(img, relX, relY, relW, relH, 0, 0, boxSize, boxSize);
 
-      ctx.drawImage(img, relativeX, relativeY, relativeW, relativeH, 0, 0, boxSize, boxSize);
-
-      // Converte para URL e tenta detectar
-      const dataUrl = canvas.toDataURL('image/png');
-      setDebugMessage("🔄 Enviando para detecção...");
-      const decoded = await detectWithZXing(dataUrl);
-
+      let bitmap = await createImageBitmap(canvas);
+      let decoded = await detectWithNative(bitmap);
       if (decoded) {
         setDebugMessage(`✅ Sucesso: ${decoded}`);
+        onDetected(decoded);
+        fecharPreview();
+        return;
+      }
+
+      const dataUrl = canvas.toDataURL();
+      decoded = await detectWithZXing(dataUrl);
+      if (decoded) {
+        setDebugMessage(`✅ Sucesso (ZXing): ${decoded}`);
+        onDetected(decoded);
+        fecharPreview();
+        return;
+      }
+
+      setDebugMessage("🎨 Tentando com pré-processamento...");
+      const processedCanvas = preprocessImage(canvas);
+      const processedBitmap = await createImageBitmap(processedCanvas);
+      decoded = await detectWithNative(processedBitmap);
+      if (!decoded) {
+        const processedUrl = processedCanvas.toDataURL();
+        decoded = await detectWithZXing(processedUrl);
+      }
+
+      if (decoded) {
+        setDebugMessage(`✅ Sucesso após pré-processamento: ${decoded}`);
         onDetected(decoded);
         fecharPreview();
       } else {
         setDebugMessage("❌ Nenhum código detectado. Tente mais zoom e centralização.");
       }
     } catch (err: any) {
-      console.error(err);
       setDebugMessage(`💥 Erro: ${err.message || err}`);
     } finally {
       setProcessing(false);
@@ -183,7 +224,6 @@ export default function Scanner({ onDetected }: ScannerProps) {
     const imageUrl = URL.createObjectURL(file);
     setImagePreviewUrl(imageUrl);
 
-    // Tentativa automática na imagem inteira
     let decoded: string | null = null;
     try {
       const img = new Image();
@@ -194,8 +234,12 @@ export default function Scanner({ onDetected }: ScannerProps) {
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
       ctx?.drawImage(img, 0, 0);
-      const dataUrl = canvas.toDataURL();
-      decoded = await detectWithZXing(dataUrl);
+      const bitmap = await createImageBitmap(canvas);
+      decoded = await detectWithNative(bitmap);
+      if (!decoded) {
+        const dataUrl = canvas.toDataURL();
+        decoded = await detectWithZXing(dataUrl);
+      }
     } catch (err) {
       console.error(err);
     }
