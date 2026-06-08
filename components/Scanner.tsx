@@ -8,13 +8,12 @@ interface ScannerProps {
 }
 
 export default function Scanner({ onDetected }: ScannerProps) {
-  // Estados da câmera
   const [scanning, setScanning] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [debugMessage, setDebugMessage] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
 
-  // Estados do zoom/pan
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showCrop, setShowCrop] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -22,14 +21,12 @@ export default function Scanner({ onDetected }: ScannerProps) {
   const imageElementRef = useRef<HTMLImageElement>(null);
   const transformWrapperRef = useRef<any>(null);
 
-  // Limpeza da câmera
   useEffect(() => {
     return () => {
       if (readerRef.current) readerRef.current.reset();
     };
   }, []);
 
-  // ========== CÂMERA ==========
   const stopScanning = async () => {
     if (readerRef.current) {
       readerRef.current.reset();
@@ -63,60 +60,33 @@ export default function Scanner({ onDetected }: ScannerProps) {
     }
   };
 
-  // ========== DETECÇÃO (nativa + fallback) ==========
-  const detectWithNativeAPI = async (imageBitmap: ImageBitmap): Promise<string | null> => {
-    if (!('BarcodeDetector' in window)) return null;
-    try {
-      const detector = new (window as any).BarcodeDetector({ formats: ['qr_code', 'data_matrix', 'aztec', 'pdf417'] });
-      const barcodes = await detector.detect(imageBitmap);
-      return barcodes[0]?.rawValue || null;
-    } catch {
-      return null;
-    }
-  };
-
   const detectWithZXing = async (imageUrl: string): Promise<string | null> => {
     const reader = new BrowserMultiFormatReader();
     try {
       const result = await reader.decodeFromImageUrl(imageUrl);
       return result ? result.getText() : null;
-    } catch {
+    } catch (err) {
+      console.warn("ZXing falhou", err);
       return null;
     } finally {
       reader.reset();
     }
   };
 
-  const detectFromImageBitmap = async (bitmap: ImageBitmap): Promise<string | null> => {
-    let text = await detectWithNativeAPI(bitmap);
-    if (!text) {
-      const canvas = document.createElement('canvas');
-      canvas.width = bitmap.width;
-      canvas.height = bitmap.height;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(bitmap, 0, 0);
-      const dataUrl = canvas.toDataURL();
-      text = await detectWithZXing(dataUrl);
-    }
-    return text;
-  };
-
-  // ========== EXTRAÇÃO DA REGIÃO CENTRAL - MÉTODO ROBUSTO ==========
   const detectCentralRegion = async () => {
     if (!containerRef.current || !imageElementRef.current) {
-      alert('Erro: elementos da interface não carregados');
+      setDebugMessage("❌ Elementos não carregados");
       return;
     }
-
     setProcessing(true);
+    setDebugMessage("🔍 Processando região central...");
     try {
       const container = containerRef.current;
       const img = imageElementRef.current;
       const wrapper = transformWrapperRef.current;
 
-      // 1. Obtém a transformação CSS aplicada à imagem pela biblioteca
+      // Obtém transformação via CSS matrix
       const transformStyle = window.getComputedStyle(img).transform;
-      // Ex: matrix(1.5, 0, 0, 1.5, 100, 50)
       let scale = 1;
       let translateX = 0;
       let translateY = 0;
@@ -125,105 +95,95 @@ export default function Scanner({ onDetected }: ScannerProps) {
         const matrix = transformStyle.match(/matrix\(([^)]+)\)/);
         if (matrix && matrix[1]) {
           const values = matrix[1].split(',').map(parseFloat);
-          scale = Math.sqrt(values[0] * values[0] + values[1] * values[1]); // fator de escala
+          scale = Math.sqrt(values[0] * values[0] + values[1] * values[1]);
           translateX = values[4];
           translateY = values[5];
         }
       } else if (wrapper && wrapper.state) {
-        // Fallback: pegar da lib caso transformStyle não funcione
         scale = wrapper.state.scale || 1;
         translateX = wrapper.state.positionX || 0;
         translateY = wrapper.state.positionY || 0;
       }
 
-      // Dimensões do container
       const containerRect = container.getBoundingClientRect();
       const containerWidth = containerRect.width;
       const containerHeight = containerRect.height;
 
-      // Tamanho natural da imagem
       const imgNaturalWidth = img.naturalWidth;
       const imgNaturalHeight = img.naturalHeight;
       if (imgNaturalWidth === 0 || imgNaturalHeight === 0) {
-        throw new Error('Imagem não carregada completamente');
+        throw new Error('Imagem não carregada');
       }
 
-      // Tamanho exibido da imagem (após escala)
       const imgDisplayWidth = imgNaturalWidth * scale;
       const imgDisplayHeight = imgNaturalHeight * scale;
-
-      // Posição da imagem no container (considerando translate)
-      // A biblioteca centraliza a imagem por padrão, então o ponto (0,0) da imagem está no centro do container
       const imgLeft = translateX + (containerWidth - imgDisplayWidth) / 2;
       const imgTop = translateY + (containerHeight - imgDisplayHeight) / 2;
 
-      // Área verde central (60% do menor lado do container)
       const boxSize = Math.min(containerWidth, containerHeight) * 0.6;
       const boxX = (containerWidth - boxSize) / 2;
       const boxY = (containerHeight - boxSize) / 2;
 
-      // Coordenadas da área verde em relação à imagem original
       const relativeX = (boxX - imgLeft) / scale;
       const relativeY = (boxY - imgTop) / scale;
       const relativeW = boxSize / scale;
       const relativeH = boxSize / scale;
 
-      // Valida se está dentro da imagem
+      setDebugMessage(`📐 Área: X=${relativeX.toFixed(0)} Y=${relativeY.toFixed(0)} W=${relativeW.toFixed(0)} H=${relativeH.toFixed(0)} | Img: ${imgNaturalWidth}x${imgNaturalHeight}`);
+
       if (relativeX < 0 || relativeY < 0 || relativeX + relativeW > imgNaturalWidth || relativeY + relativeH > imgNaturalHeight) {
-        alert(`A área verde está fora da imagem. Ajuste a posição/zoom.
-Valores: X=${relativeX.toFixed(0)}, Y=${relativeY.toFixed(0)}, Largura imagem=${imgNaturalWidth}, Altura=${imgNaturalHeight}`);
+        setDebugMessage(`⚠️ Área verde fora da imagem. Ajuste a posição/zoom.`);
         setProcessing(false);
         return;
       }
 
-      // Cria canvas para recortar a região
+      // Cria canvas em alta resolução
       const canvas = document.createElement('canvas');
       canvas.width = boxSize;
       canvas.height = boxSize;
       const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Falha ao criar contexto canvas');
+      if (!ctx) throw new Error('Sem contexto');
 
-      // Desenha a região recortada da imagem original
-      ctx.drawImage(
-        img,
-        relativeX, relativeY, relativeW, relativeH,
-        0, 0, boxSize, boxSize
-      );
+      ctx.drawImage(img, relativeX, relativeY, relativeW, relativeH, 0, 0, boxSize, boxSize);
 
-      // Tenta detectar o código
-      const bitmap = await createImageBitmap(canvas);
-      const decoded = await detectFromImageBitmap(bitmap);
+      // Converte para URL e tenta detectar
+      const dataUrl = canvas.toDataURL('image/png');
+      setDebugMessage("🔄 Enviando para detecção...");
+      const decoded = await detectWithZXing(dataUrl);
 
       if (decoded) {
+        setDebugMessage(`✅ Sucesso: ${decoded}`);
         onDetected(decoded);
         fecharPreview();
       } else {
-        alert('Nenhum código detectado na área verde. Tente ampliar o zoom e centralizar bem o código.');
+        setDebugMessage("❌ Nenhum código detectado. Tente mais zoom e centralização.");
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Erro detalhado: ${err.message || err}\n\nTente novamente com outra imagem ou contate o suporte.`);
+      setDebugMessage(`💥 Erro: ${err.message || err}`);
     } finally {
       setProcessing(false);
+      setTimeout(() => setDebugMessage(null), 4000);
     }
   };
 
   const fecharPreview = () => {
     setImagePreviewUrl(null);
     setShowCrop(false);
+    setDebugMessage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // ========== UPLOAD E TENTATIVA AUTOMÁTICA ==========
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setProcessing(true);
+    setDebugMessage("📤 Carregando imagem...");
     const imageUrl = URL.createObjectURL(file);
     setImagePreviewUrl(imageUrl);
 
-    // Detecção automática na imagem inteira
+    // Tentativa automática na imagem inteira
     let decoded: string | null = null;
     try {
       const img = new Image();
@@ -234,8 +194,8 @@ Valores: X=${relativeX.toFixed(0)}, Y=${relativeY.toFixed(0)}, Largura imagem=${
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
       ctx?.drawImage(img, 0, 0);
-      const bitmap = await createImageBitmap(canvas);
-      decoded = await detectFromImageBitmap(bitmap);
+      const dataUrl = canvas.toDataURL();
+      decoded = await detectWithZXing(dataUrl);
     } catch (err) {
       console.error(err);
     }
@@ -243,29 +203,34 @@ Valores: X=${relativeX.toFixed(0)}, Y=${relativeY.toFixed(0)}, Largura imagem=${
     if (decoded) {
       URL.revokeObjectURL(imageUrl);
       setProcessing(false);
+      setDebugMessage(null);
       onDetected(decoded);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
-    // Falhou: abre modo manual
     setProcessing(false);
     setShowCrop(true);
     setTimeout(() => {
       if (imageElementRef.current) {
         imageElementRef.current.src = imageUrl;
+        setDebugMessage("🔎 Ajuste o código no quadrado verde e clique em Detectar");
       }
     }, 50);
   };
 
-  // ========== RENDER ==========
   return (
     <div className="flex flex-col items-center gap-3">
-      {/* Modal de ajuste manual */}
+      {debugMessage && (
+        <div className="fixed bottom-4 left-4 right-4 bg-yellow-800 text-white p-3 rounded-lg z-50 text-center text-sm shadow-lg">
+          {debugMessage}
+        </div>
+      )}
+
       {showCrop && imagePreviewUrl && (
         <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center p-4">
           <h3 className="text-white text-lg mb-2 text-center">
-            Arraste e dê zoom para posicionar o código <strong className="text-green-400">dentro do quadrado verde</strong>
+            Posicione o código <strong className="text-green-400">dentro do quadrado verde</strong>
           </h3>
           <div
             ref={containerRef}
@@ -296,7 +261,6 @@ Valores: X=${relativeX.toFixed(0)}, Y=${relativeY.toFixed(0)}, Largura imagem=${
                 />
               </TransformComponent>
             </TransformWrapper>
-            {/* Máscara central */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
               <div
                 className="border-4 border-green-500"
@@ -324,12 +288,11 @@ Valores: X=${relativeX.toFixed(0)}, Y=${relativeY.toFixed(0)}, Largura imagem=${
             </button>
           </div>
           <p className="text-gray-300 text-sm mt-2">
-            • 1 dedo: arrastar • 2 dedos: zoom
+            🖱️ 1 dedo: arrastar • ✌️ 2 dedos: zoom
           </p>
         </div>
       )}
 
-      {/* Câmera */}
       <video
         ref={videoRef}
         className="w-full max-w-sm rounded border bg-black"
