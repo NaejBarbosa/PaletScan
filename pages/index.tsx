@@ -33,7 +33,7 @@ function HomeContent() {
   const [confirmacao, setConfirmacao] = useState<{
     ean: string;
     validade: string;
-    produit?: ProdutoValido;
+    produto?: ProdutoValido;   // ✅ corrigido: era "produit"
   } | null>(null);
   const [itensRegistrados, setItensRegistrados] = useState<ItemRegistrado[]>([]);
 
