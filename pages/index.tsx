@@ -295,7 +295,7 @@ function HomeContent() {
                         >
                           🗑️ Remover
                         </button>
-                       </td>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -308,15 +308,19 @@ function HomeContent() {
         )}
       </div>
 
-      {/* Toast de notificação */}
+      {/* Toast centralizado - profissional */}
       {toast && (
-        <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-2xl backdrop-blur-md transition-all duration-300 animate-fadeIn flex items-center gap-2 ${
-          toast.type === 'success' ? 'bg-green-600/90 text-white' :
-          toast.type === 'error' ? 'bg-red-600/90 text-white' :
-          'bg-blue-600/90 text-white'
-        }`}>
-          <span>{toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}</span>
-          <span className="font-medium">{toast.message}</span>
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <div className={`px-6 py-3 rounded-xl shadow-2xl backdrop-blur-md animate-fadeIn flex items-center gap-3 max-w-md whitespace-normal text-center pointer-events-auto ${
+            toast.type === 'success' ? 'bg-green-600/95 text-white' :
+            toast.type === 'error' ? 'bg-red-600/95 text-white' :
+            'bg-blue-600/95 text-white'
+          }`}>
+            <span className="text-xl flex-shrink-0">
+              {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}
+            </span>
+            <span className="font-medium flex-1">{toast.message}</span>
+          </div>
         </div>
       )}
     </div>
