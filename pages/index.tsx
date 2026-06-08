@@ -22,13 +22,12 @@ interface ItemRegistrado {
   produtoClasse: string;
   produtoDescr: string;
   dataRegistro: Date;
-  // Novo campo para controle de envio (opcional)
 }
 
 function HomeContent() {
   const { theme, toggleTheme } = useTheme();
   const [produtosValidos, setProdutosValidos] = useState<ProdutoValido[]>([]);
-  const [scannedEans, setScannedEans] = useState<Set<string>>(new Set()); // Apenas para evitar duplicados na mesma sessão
+  const [scannedEans, setScannedEans] = useState<Set<string>>(new Set());
   const [currentScan, setCurrentScan] = useState<{ ean: string; validade: string } | null>(null);
   const [modoManual, setModoManual] = useState(false);
   const [confirmacao, setConfirmacao] = useState<{
@@ -37,6 +36,8 @@ function HomeContent() {
     produto?: ProdutoValido;
   } | null>(null);
   const [itensRegistrados, setItensRegistrados] = useState<ItemRegistrado[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'error' } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetch('/api/validar')
@@ -45,7 +46,11 @@ function HomeContent() {
       .catch((err) => console.error('Erro ao carregar base', err));
   }, []);
 
-  // Função para adicionar item à lista local (sem gravar no banco ainda)
+  const showToast = (message: string, type: 'info' | 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const adicionarItemNaLista = (produto: ProdutoValido, ean: string, validade: string) => {
     const novoItem: ItemRegistrado = {
       id: `${Date.now()}-${ean}-${Math.random()}`,
@@ -61,12 +66,14 @@ function HomeContent() {
     setScannedEans((prev) => new Set(prev).add(ean));
   };
 
-  // Função para gravar TODOS os itens da lista no Google Sheets
   const gravarTodosNoBanco = async () => {
     if (itensRegistrados.length === 0) {
-      alert('Nenhum item na lista para gravar.');
+      showToast('Nenhum item na lista para gravar.', 'error');
       return;
     }
+
+    setIsSubmitting(true);
+    showToast(`📤 Gravando ${itensRegistrados.length} produto(s)...`, 'info');
 
     let sucesso = true;
     for (const item of itensRegistrados) {
@@ -84,26 +91,23 @@ function HomeContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(registro),
         });
-        if (!res.ok) {
-          sucesso = false;
-          console.error(`Erro ao gravar EAN ${item.ean}`);
-        }
+        if (!res.ok) sucesso = false;
       } catch (error) {
         sucesso = false;
-        console.error(error);
       }
     }
 
+    setIsSubmitting(false);
+
     if (sucesso) {
-      alert(`✅ ${itensRegistrados.length} produto(s) gravado(s) com sucesso no banco_cadastro!`);
-      setItensRegistrados([]); // Limpa a lista após gravar
-      setScannedEans(new Set()); // Limpa o controle de duplicados
+      showToast(`✅ ${itensRegistrados.length} produto(s) gravado(s) com sucesso!`, 'success');
+      setItensRegistrados([]);
+      setScannedEans(new Set());
     } else {
-      alert('❌ Houve erro ao gravar um ou mais produtos. Verifique o console.');
+      showToast('❌ Erro ao gravar um ou mais produtos. Tente novamente.', 'error');
     }
   };
 
-  // Remover item individualmente da lista local
   const removerItemDaLista = (id: string) => {
     setItensRegistrados((prev) => prev.filter((item) => item.id !== id));
   };
@@ -111,47 +115,37 @@ function HomeContent() {
   const handleQRCode = (text: string) => {
     const dados = extrairDados(text);
     if (!dados) {
-      alert(`❌ Formato inválido\n\nTexto recebido:\n${text}`);
+      showToast('Formato inválido. Escaneie um Data Matrix válido.', 'error');
       return;
     }
     const { ean, validade } = dados;
     if (scannedEans.has(ean)) {
-      alert('⚠️ Este código já foi adicionado à lista nesta sessão.');
+      showToast('⚠️ Este código já foi adicionado à lista nesta sessão.', 'error');
       return;
     }
     const produtoEncontrado = produtosValidos.find((p) => p.produtoEan === ean);
     setConfirmacao({ ean, validade, produto: produtoEncontrado });
   };
 
-  // Ação do botão "+ Adicionar à lista"
   const handleAdicionarLista = () => {
     if (!confirmacao) return;
     const { ean, validade, produto } = confirmacao;
     if (!produto) {
-      // Se não encontrou na base, abre o cadastro manual
       setCurrentScan({ ean, validade });
       setModoManual(true);
       setConfirmacao(null);
       return;
     }
     adicionarItemNaLista(produto, ean, validade);
-    alert('✅ Produto adicionado à lista!');
     setConfirmacao(null);
   };
 
-  const handleNovaLeitura = () => {
-    setConfirmacao(null);
-  };
+  const handleNovaLeitura = () => setConfirmacao(null);
+  const handleDescartar = () => setConfirmacao(null);
 
-  const handleDescartar = () => {
-    setConfirmacao(null);
-  };
-
-  // Submissão do cadastro manual (quando produto não está na base)
-  const handleManualSubmit = async (produto: ProdutoValido, validadeFinal: string) => {
+  const handleManualSubmit = (produto: ProdutoValido, validadeFinal: string) => {
     if (!currentScan) return;
     adicionarItemNaLista(produto, currentScan.ean, validadeFinal);
-    alert('✅ Produto manual adicionado à lista!');
     setModoManual(false);
     setCurrentScan(null);
   };
@@ -159,7 +153,7 @@ function HomeContent() {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
       <div className="container mx-auto px-4 py-8 max-w-5xl">
-        {/* Header moderno */}
+        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
@@ -182,14 +176,14 @@ function HomeContent() {
           </button>
         </div>
 
-        {/* Card do Scanner com efeito glass */}
+        {/* Scanner Card */}
         <div className={`rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm border ${
           theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-white/80 border-gray-200'
         } transition-all duration-300`}>
           <Scanner onDetected={handleQRCode} />
         </div>
 
-        {/* Modal de confirmação - com botão "+ Adicionar à lista" */}
+        {/* Modal de confirmação */}
         {confirmacao && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
             <div className={`rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all duration-300 scale-100 ${
@@ -219,8 +213,8 @@ function HomeContent() {
                 )}
               </div>
               <div className="flex flex-col gap-3">
-                <button onClick={handleAdicionarLista} className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg">
-                  + Adicionar à lista
+                <button onClick={handleAdicionarLista} className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2">
+                  ➕ Adicionar
                 </button>
                 <button onClick={handleNovaLeitura} className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl transition-all duration-200">
                   📷 Nova leitura
@@ -233,7 +227,7 @@ function HomeContent() {
           </div>
         )}
 
-        {/* Cadastro manual em card moderno */}
+        {/* Cadastro manual */}
         {modoManual && currentScan && (
           <div className={`mt-8 rounded-2xl shadow-xl p-6 border ${
             theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-white/80 border-gray-200'
@@ -259,7 +253,7 @@ function HomeContent() {
           </div>
         )}
 
-        {/* Lista de produtos adicionados (pendentes de gravação) */}
+        {/* Lista de produtos pendentes */}
         {itensRegistrados.length > 0 && (
           <div className={`mt-10 rounded-2xl shadow-xl p-4 border ${
             theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-white/80 border-gray-200'
@@ -270,9 +264,10 @@ function HomeContent() {
               </h2>
               <button
                 onClick={gravarTodosNoBanco}
-                className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-md flex items-center gap-2"
+                disabled={isSubmitting}
+                className={`px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-md flex items-center gap-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                💾 Gravar todos no banco
+                {isSubmitting ? '⏳ Gravando...' : '💾 Gravar todos'}
               </button>
             </div>
             <div className="overflow-x-auto">
@@ -300,18 +295,30 @@ function HomeContent() {
                         >
                           🗑️ Remover
                         </button>
-                      </td>
+                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             <p className="text-xs mt-4 opacity-60 text-center">
-              * Itens apenas na lista local. Clique em "Gravar todos no banco" para salvar permanentemente.
+              * Itens apenas na lista local. Clique em "Gravar todos" para salvar permanentemente.
             </p>
           </div>
         )}
       </div>
+
+      {/* Toast de notificação */}
+      {toast && (
+        <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-2xl backdrop-blur-md transition-all duration-300 animate-fadeIn flex items-center gap-2 ${
+          toast.type === 'success' ? 'bg-green-600/90 text-white' :
+          toast.type === 'error' ? 'bg-red-600/90 text-white' :
+          'bg-blue-600/90 text-white'
+        }`}>
+          <span>{toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}</span>
+          <span className="font-medium">{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 }
