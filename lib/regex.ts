@@ -23,20 +23,32 @@ function formatToDDMMYYYY(date: Date): string {
 }
 
 /**
+ * Valida se uma data no formato dd/mm/aaaa é real
+ * @param dateStr - string no formato dd/mm/aaaa
+ * @returns true se data válida, false caso contrário
+ */
+export function validarDataReal(dateStr: string): boolean {
+  const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+  const match = dateStr.match(regex);
+  if (!match) return false;
+  const day = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10);
+  const year = parseInt(match[3], 10);
+  return isValidDate(year, month, day);
+}
+
+/**
  * Extrai EAN e data de validade do texto bruto do Data Matrix
  * @param qrData - string no formato "315315;17896419732515;202603197004783;"
  * @returns objeto com ean (13 dígitos) e validade (dd/mm/aaaa) ou null
  */
-export function extrairDados(qrData: string) {
+function extrairDadosDataMatrix(qrData: string) {
   const clean = qrData.trim();
-  console.log('[extrairDados] Texto bruto:', clean);
-
   // Regex: captura os 13 dígitos do EAN (após o "1") e os 8 dígitos da data de fabricação
   const regex = /^\d+;1(\d{13});(\d{8})/;
   const match = clean.match(regex);
 
   if (!match || !match[1] || !match[2]) {
-    console.error('[extrairDados] Regex falhou. Texto:', clean);
     return null;
   }
 
@@ -50,7 +62,6 @@ export function extrairDados(qrData: string) {
 
   // Valida a data de fabricação
   if (!isValidDate(anoFab, mesFab, diaFab)) {
-    console.error('[extrairDados] Data de fabricação inválida:', dataFabStr);
     return null;
   }
 
@@ -66,16 +77,82 @@ export function extrairDados(qrData: string) {
   const mesVal = dataValidade.getMonth() + 1;
   const diaVal = dataValidade.getDate();
   if (!isValidDate(anoVal, mesVal, diaVal)) {
-    console.error('[extrairDados] Data de validade calculada inválida:', dataValidade);
     return null;
   }
 
   const validadeFormatada = formatToDDMMYYYY(dataValidade);
 
-  console.log('[extrairDados] Sucesso -> EAN:', ean13, 'Validade:', validadeFormatada);
-
   return {
     ean: ean13,
     validade: validadeFormatada,      // dd/mm/aaaa
   };
+}
+
+/**
+ * Extrai EAN e data de validade do texto bruto
+ * @param text - string escaneada (pode ser Data Matrix, QRCode, código de barras, etc.)
+ * @returns { ean: string, validade: string | null, tipo: 'datamatrix' | 'ean_validade' | 'ean' | null }
+ */
+export function extrairDados(text: string) {
+  const clean = text.trim();
+  console.log('[extrairDados] Texto bruto:', clean);
+
+  // Tentativa 1: Data Matrix completo (formato: "315315;17896419732515;202603197004783;")
+  const dmResult = extrairDadosDataMatrix(clean);
+  if (dmResult) {
+    console.log('[extrairDados] Data Matrix detectado -> EAN:', dmResult.ean, 'Validade:', dmResult.validade);
+    return { ...dmResult, tipo: 'datamatrix' as const };
+  }
+
+  // Tentativa 2: QRCode com EAN + validade dd/mm/aaaa (ex: "7896419732515;31/12/2025")
+  const eanValidadeRegex = /^(\d{13})\s*;\s*(\d{2})\/(\d{2})\/(\d{4})/;
+  const eanValidadeMatch = clean.match(eanValidadeRegex);
+  if (eanValidadeMatch) {
+    const ean = eanValidadeMatch[1];
+    const day = parseInt(eanValidadeMatch[2], 10);
+    const month = parseInt(eanValidadeMatch[3], 10);
+    const year = parseInt(eanValidadeMatch[4], 10);
+    if (isValidDate(year, month, day)) {
+      const validade = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+      console.log('[extrairDados] EAN+Validade detectado -> EAN:', ean, 'Validade:', validade);
+      return { ean, validade, tipo: 'ean_validade' as const };
+    }
+  }
+
+  // Tentativa 3: QRCode com EAN + validade YYYYMMDD (ex: "7896419732515;20251231")
+  const eanValidadeYYYYMMDDRegex = /^(\d{13})\s*;\s*(\d{4})(\d{2})(\d{2})/;
+  const eanValidadeYYYYMMDDMatch = clean.match(eanValidadeYYYYMMDDRegex);
+  if (eanValidadeYYYYMMDDMatch) {
+    const ean = eanValidadeYYYYMMDDMatch[1];
+    const year = parseInt(eanValidadeYYYYMMDDMatch[2], 10);
+    const month = parseInt(eanValidadeYYYYMMDDMatch[3], 10);
+    const day = parseInt(eanValidadeYYYYMMDDMatch[4], 10);
+    if (isValidDate(year, month, day)) {
+      const validade = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+      console.log('[extrairDados] EAN+Validade YYYYMMDD detectado -> EAN:', ean, 'Validade:', validade);
+      return { ean, validade, tipo: 'ean_validade' as const };
+    }
+  }
+
+  // Tentativa 4: Código de barras com EAN + outro número (ex: "789641973251512345")
+  // Procura por EAN-13 com 13 dígitos delimitado por word boundary
+  const eanRegex = /\b(\d{13})\b/;
+  const eanMatch = clean.match(eanRegex);
+  if (eanMatch) {
+    const ean = eanMatch[1];
+    console.log('[extrairDados] EAN isolado detectado -> EAN:', ean);
+    return { ean, validade: null, tipo: 'ean' as const };
+  }
+
+  // Tentativa 5: EAN com 8 dígitos (EAN-8)
+  const ean8Regex = /\b(\d{8})\b/;
+  const ean8Match = clean.match(ean8Regex);
+  if (ean8Match) {
+    const ean = ean8Match[1];
+    console.log('[extrairDados] EAN-8 detectado -> EAN:', ean);
+    return { ean, validade: null, tipo: 'ean' as const };
+  }
+
+  console.error('[extrairDados] Nenhum formato reconhecido. Texto:', clean);
+  return null;
 }

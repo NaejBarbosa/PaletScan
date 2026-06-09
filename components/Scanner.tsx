@@ -64,7 +64,7 @@ export default function Scanner({ onDetected }: ScannerProps) {
   const detectWithNative = async (imageBitmap: ImageBitmap): Promise<string | null> => {
     if (!('BarcodeDetector' in window)) return null;
     try {
-      const detector = new (window as any).BarcodeDetector({ formats: ['qr_code', 'data_matrix', 'aztec', 'pdf417'] });
+      const detector = new (window as any).BarcodeDetector({ formats: ['qr_code', 'data_matrix', 'aztec', 'pdf417', 'ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e'] });
       const barcodes = await detector.detect(imageBitmap);
       return barcodes[0]?.rawValue || null;
     } catch {

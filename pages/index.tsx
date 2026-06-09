@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Scanner from '../components/Scanner';
 import AutocompleteManual from '../components/AutocompleteManual';
+import DataValidadeInput from '../components/DataValidadeInput';
 import { extrairDados } from '../lib/regex';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
@@ -29,6 +30,7 @@ function HomeContent() {
   const [scannedEans, setScannedEans] = useState<Set<string>>(new Set());
   const [currentScan, setCurrentScan] = useState<{ ean: string; validade: string } | null>(null);
   const [modoManual, setModoManual] = useState(false);
+  const [modoValidadeManual, setModoValidadeManual] = useState(false);
   const [confirmacao, setConfirmacao] = useState<{
     ean: string;
     validade: string;
@@ -114,16 +116,22 @@ function HomeContent() {
   const handleQRCode = (text: string) => {
     const dados = extrairDados(text);
     if (!dados) {
-      showToast('Formato inválido. Escaneie um Data Matrix válido.', 'error');
+      showToast('Formato inválido. Escaneie um Data Matrix, QRCode ou código de barras válido.', 'error');
       return;
     }
-    const { ean, validade } = dados;
+    const { ean, validade, tipo } = dados;
     if (scannedEans.has(ean)) {
       showToast('Este código já foi adicionado à lista nesta sessão.', 'error');
       return;
     }
+    // Se o tipo é apenas EAN (sem validade), abre o modal de validade manual
+    if (tipo === 'ean') {
+      setCurrentScan({ ean, validade: '' });
+      setModoValidadeManual(true);
+      return;
+    }
     const produtoEncontrado = produtosValidos.find((p) => p.produtoEan === ean);
-    setConfirmacao({ ean, validade, produto: produtoEncontrado });
+    setConfirmacao({ ean, validade: validade!, produto: produtoEncontrado });
   };
 
   const handleAdicionarLista = () => {
@@ -149,6 +157,23 @@ function HomeContent() {
     setCurrentScan(null);
   };
 
+  const handleValidadeConfirm = (validade: string) => {
+    if (!currentScan) return;
+    const produtoEncontrado = produtosValidos.find((p) => p.produtoEan === currentScan.ean);
+    if (produtoEncontrado) {
+      setConfirmacao({ ean: currentScan.ean, validade, produto: produtoEncontrado });
+    } else {
+      setModoManual(true);
+      setCurrentScan({ ean: currentScan.ean, validade });
+    }
+    setModoValidadeManual(false);
+  };
+
+  const handleValidadeCancel = () => {
+    setModoValidadeManual(false);
+    setCurrentScan(null);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       {/* Header */}
@@ -166,7 +191,7 @@ function HomeContent() {
                   Controle de Recebimento
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Escaneamento de Data Matrix
+                  Escaneamento de Codigo de Barras / QRCode / Data Matrix
                 </p>
               </div>
             </div>
@@ -321,6 +346,15 @@ function HomeContent() {
           </div>
         )}
 
+        {/* Inserir validade manualmente */}
+        {modoValidadeManual && currentScan && (
+          <DataValidadeInput
+            ean={currentScan.ean}
+            onConfirm={handleValidadeConfirm}
+            onCancel={handleValidadeCancel}
+          />
+        )}
+
         {/* Cadastro manual */}
         {modoManual && currentScan && (
           <div className="card border-warning-200 dark:border-warning-800 animate-slideUp">
@@ -344,7 +378,7 @@ function HomeContent() {
                   <p className="font-mono text-lg font-bold text-slate-900 dark:text-slate-100 mt-1 break-all">{currentScan.ean}</p>
                 </div>
                 <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
-                  <span className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-medium">Validade Calculada</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide font-medium">Validade Informada</span>
                   <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{currentScan.validade}</p>
                 </div>
               </div>
