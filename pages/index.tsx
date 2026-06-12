@@ -389,7 +389,7 @@ function HomeContent() {
           />
         )}
 
-        {/* Lista de produtos pendentes com coluna Conservação */}
+        {/* Lista de produtos pendentes com coluna Conservação após Classe */}
         {itensRegistrados.length > 0 && (
           <div className="card-elevated overflow-hidden animate-slideUp">
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center flex-wrap gap-3">
@@ -420,8 +420,8 @@ function HomeContent() {
                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Marca</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Produto</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Classe</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Validade</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Conservação</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Validade</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Ações</th>
                   </tr>
                 </thead>
@@ -434,9 +434,6 @@ function HomeContent() {
                         <span className="badge badge-primary">{item.produtoClasse}</span>
                       </td>
                       <td className="px-4 py-3 text-sm whitespace-nowrap">
-                        <span className="badge badge-success">{item.validade}</span>
-                      </td>
-                      <td className="px-4 py-3 text-sm whitespace-nowrap">
                         <span className={`badge ${
                           item.produtoConservacao?.toLowerCase().includes('congelado')
                             ? 'badge-primary'
@@ -444,6 +441,9 @@ function HomeContent() {
                         }`}>
                           {item.produtoConservacao || '—'}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm whitespace-nowrap">
+                        <span className="badge badge-success">{item.validade}</span>
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <button
