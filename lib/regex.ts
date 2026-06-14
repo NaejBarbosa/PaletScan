@@ -37,13 +37,13 @@ export function validarDataReal(dateStr: string): boolean {
 
 /**
  * Extrai DUN, EAN e data de validade do texto bruto do Data Matrix
- * Formato esperado: "315315;27896419728751;202603197004783;"
- * Agora aceita qualquer DUN de 14 dígitos (primeiro dígito pode ser 0-9)
+ * Agora aceita qualquer texto antes e depois, usando regex que captura
+ * DUN de 14 dígitos e os próximos 8 dígitos (data de fabricação).
  */
 function extrairDadosDataMatrix(qrData: string) {
-  const clean = qrData.trim();
-  // Regex modificada: captura 14 dígitos para o DUN (não força o "1" no início)
-  const regex = /^\d+;(\d{14});(\d{8})/;
+  const clean = qrData.trim().replace(/\s/g, ''); // remove espaços e quebras de linha
+  // Busca pelo padrão: 14 dígitos, ponto e vírgula, 8 dígitos
+  const regex = /(\d{14});(\d{8})/;
   const match = clean.match(regex);
 
   if (!match || !match[1] || !match[2]) {
