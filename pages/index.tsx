@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Scanner from '../components/Scanner';
 import DataValidadeInput from '../components/DataValidadeInput';
+import CadastroProdutoModal from '../components/CadastroProdutoModal';
 import { extrairDados } from '../lib/regex';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
@@ -43,6 +44,7 @@ function HomeContent() {
   const [itensRegistrados, setItensRegistrados] = useState<ItemRegistrado[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'error' } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cadastroNaoIdentificado, setCadastroNaoIdentificado] = useState<{ ean: string; dun: string; validadeTemp?: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/validar')
@@ -119,6 +121,28 @@ function HomeContent() {
     setItensRegistrados((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const handleCadastroProdutoSuccess = (novoProduto: ProdutoValido) => {
+    setProdutosValidos((prev) => [...prev, novoProduto]);
+    const ean = novoProduto.produtoEan;
+    const dun = novoProduto.produtoDun;
+    const validadeTemp = cadastroNaoIdentificado?.validadeTemp || '';
+    setCadastroNaoIdentificado(null);
+    showToast('Produto cadastrado com sucesso!', 'success');
+
+    if (validadeTemp) {
+      setConfirmacao({
+        ean,
+        dun,
+        validade: validadeTemp,
+        produto: novoProduto,
+      });
+    } else {
+      setCurrentScan({ ean, dun, validade: '' });
+      setPendingProduct(novoProduto);
+      setModoValidadeManual(true);
+    }
+  };
+
   const handleQRCode = (text: string) => {
     const dados = extrairDados(text);
     if (!dados) {
@@ -138,7 +162,8 @@ function HomeContent() {
     if (dun) {
       produtoEncontrado = produtosValidos.find((p) => p.produtoDun === dun);
       if (!produtoEncontrado) {
-        showToast(`DUN ${dun} não identificado na base.`, 'error');
+        showToast(`DUN ${dun} não identificado na base. Abrindo cadastro...`, 'info');
+        setCadastroNaoIdentificado({ ean: ean || '', dun, validadeTemp: validade || '' });
         return;
       }
       // ✅ Usa o EAN cadastrado na base, nunca o derivado do DUN
@@ -148,7 +173,8 @@ function HomeContent() {
     else if (ean) {
       produtoEncontrado = produtosValidos.find((p) => p.produtoEan === ean);
       if (!produtoEncontrado) {
-        showToast(`EAN ${ean} não identificado na base.`, 'error');
+        showToast(`EAN ${ean} não identificado na base. Abrindo cadastro...`, 'info');
+        setCadastroNaoIdentificado({ ean, dun: dun || '', validadeTemp: validade || '' });
         return;
       }
       // ✅ Busca o DUN correspondente na base (se existir)
@@ -386,6 +412,17 @@ function HomeContent() {
             ean={currentScan.ean}
             onConfirm={handleValidadeConfirm}
             onCancel={handleValidadeCancel}
+          />
+        )}
+
+        {/* Modal de cadastro de produto não identificado */}
+        {cadastroNaoIdentificado && (
+          <CadastroProdutoModal
+            initialEan={cadastroNaoIdentificado.ean}
+            initialDun={cadastroNaoIdentificado.dun}
+            produtosValidos={produtosValidos}
+            onClose={() => setCadastroNaoIdentificado(null)}
+            onSuccess={handleCadastroProdutoSuccess}
           />
         )}
 

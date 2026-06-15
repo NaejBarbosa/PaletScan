@@ -9,7 +9,7 @@ export default async function handler(
   try {
     const sheetId = process.env.BANCO_VALIDA_SHEET_ID as string;
     // Colunas A..G: marca-id, marca-descr, produto-classe, produto-ean, produto-dun, produto-conservacao, produto-descr
-    const data = await getSheetData(sheetId, 'A:G');
+    const data = await getSheetData(sheetId, 'banco_valida!A:G');
     // Ignorar cabeçalho (linha 1)
     const rows = data.slice(1).map((row) => ({
       marcaId: row[0],
