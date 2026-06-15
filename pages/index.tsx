@@ -152,7 +152,7 @@ function HomeContent() {
     }
   };
 
-  const handleQRCode = (text: string) => {
+  const processarLeituraComBase = (text: string, baseProdutos: ProdutoValido[]) => {
     const dados = extrairDados(text);
     if (!dados) {
       showToast('Formato inválido. Escaneie um Data Matrix, QRCode ou código de barras válido.', 'error');
@@ -169,7 +169,7 @@ function HomeContent() {
 
     // 1) Se temos DUN (do código), busca o produto pelo DUN
     if (dun) {
-      produtoEncontrado = produtosValidos.find((p) => p.produtoDun === dun);
+      produtoEncontrado = baseProdutos.find((p) => p.produtoDun === dun);
       if (!produtoEncontrado) {
         showToast(`DUN ${dun} não identificado na base. Abrindo cadastro...`, 'info');
         setCadastroNaoIdentificado({ ean: ean || '', dun, validadeTemp: validade || '' });
@@ -180,7 +180,7 @@ function HomeContent() {
     }
     // 2) Senão, busca pelo EAN (caso o código seja só EAN)
     else if (ean) {
-      produtoEncontrado = produtosValidos.find((p) => p.produtoEan === ean);
+      produtoEncontrado = baseProdutos.find((p) => p.produtoEan === ean);
       if (!produtoEncontrado) {
         showToast(`EAN ${ean} não identificado na base. Abrindo cadastro...`, 'info');
         setCadastroNaoIdentificado({ ean, dun: dun || '', validadeTemp: validade || '' });
@@ -206,6 +206,23 @@ function HomeContent() {
       setCurrentScan({ ean, dun: dun || '', validade: '' });
       setPendingProduct(produtoEncontrado);
       setModoValidadeManual(true);
+    }
+  };
+
+  const handleQRCode = async (text: string) => {
+    showToast('Validando com a base em tempo real...', 'info');
+    try {
+      const res = await fetch('/api/validar');
+      if (res.ok) {
+        const data = await res.json();
+        setProdutosValidos(data);
+        processarLeituraComBase(text, data);
+      } else {
+        processarLeituraComBase(text, produtosValidos);
+      }
+    } catch (err) {
+      console.error('Erro ao atualizar base no escaneamento:', err);
+      processarLeituraComBase(text, produtosValidos);
     }
   };
 
@@ -288,21 +305,9 @@ function HomeContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <div className="flex-1">
+              <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Produtos na Base</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{produtosValidos.length}</p>
-                  <button
-                    onClick={recarregarBase}
-                    disabled={isRefreshingBase}
-                    className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors disabled:opacity-50"
-                    title="Sincronizar base"
-                  >
-                    <svg className={`w-4 h-4 ${isRefreshingBase ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18" />
-                    </svg>
-                  </button>
-                </div>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{produtosValidos.length}</p>
               </div>
             </div>
           </div>
