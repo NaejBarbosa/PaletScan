@@ -6,6 +6,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
   try {
     const sheetId = process.env.BANCO_VALIDA_SHEET_ID as string;
     // Colunas A..B na aba banco_valida_marca: marca-id, marca-descr
