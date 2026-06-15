@@ -35,3 +35,18 @@ export async function appendRow(
   });
   return res.data;
 }
+
+export async function updateRow(
+  spreadsheetId: string,
+  range: string,
+  values: any[]
+) {
+  const sheets = await getSheetsClient();
+  const res = await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: [values] },
+  });
+  return res.data;
+}

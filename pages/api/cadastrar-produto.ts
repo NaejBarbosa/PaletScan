@@ -1,6 +1,6 @@
 // pages/api/cadastrar-produto.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { appendRow } from '../../lib/googleSheets';
+import { getSheetData, updateRow } from '../../lib/googleSheets';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -24,7 +24,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!sheetId) {
       return res.status(500).json({ error: 'Erro: A variável de ambiente BANCO_VALIDA_SHEET_ID não está configurada no servidor.' });
     }
+
+    // Para evitar que o Sheets API tente adivinhar as colunas e desvie a gravação 
+    // (ex: gravando em B:H em vez de A:G), nós calculamos a próxima linha livre 
+    // e gravamos diretamente no intervalo exato usando a função UPDATE.
     
+    // Busca os dados da coluna A para saber a quantidade total de linhas
+    console.log('[API Cadastrar Produto] Obtendo tamanho atual da planilha...');
+    const colAData = await getSheetData(sheetId, 'banco_valida!A:A');
+    const nextRow = colAData.length + 1;
+    const targetRange = `banco_valida!A${nextRow}:G${nextRow}`;
+
     const rowValues = [
       marcaId,
       marcaDescr,
@@ -35,12 +45,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       produtoDescr,
     ];
 
-    console.log('[API Cadastrar Produto] Tentando gravar na planilha:', sheetId);
+    console.log(`[API Cadastrar Produto] Gravando na linha ${nextRow} (Intervalo: ${targetRange}) na planilha:`, sheetId);
     console.log('[API Cadastrar Produto] Conteúdo da linha:', JSON.stringify(rowValues));
 
-    // As colunas da aba banco_valida são: 
-    // marca-id, marca-descr, produto-classe, produto-ean, produto-dun, produto-conservacao, produto-descr
-    const result = await appendRow(sheetId, 'banco_valida!A:G', rowValues);
+    // Gravação forçada nas colunas A a G da próxima linha
+    const result = await updateRow(sheetId, targetRange, rowValues);
 
     console.log('[API Cadastrar Produto] Sucesso no Sheets API! Retorno:', JSON.stringify(result));
 
