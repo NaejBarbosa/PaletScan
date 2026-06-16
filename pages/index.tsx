@@ -159,10 +159,6 @@ function HomeContent() {
       return;
     }
     let { ean, dun, validade, tipo } = dados;
-    if (scannedEans.has(ean)) {
-      showToast('Este código já foi adicionado à lista nesta sessão.', 'error');
-      return;
-    }
 
     // ========== CORREÇÃO: Sempre usar os dados da base quando disponíveis ==========
     let produtoEncontrado: ProdutoValido | undefined = undefined;
@@ -172,12 +168,12 @@ function HomeContent() {
       produtoEncontrado = baseProdutos.find((p) => p.produtoDun === dun);
       if (!produtoEncontrado) {
         showToast(`DUN ${dun} não identificado na base. Abrindo cadastro...`, 'info');
-        // Se o tipo for 'dun' (código de barras DUN puro), não pré-preenchemos o EAN para permitir escaneamento
-        const eanInicial = tipo === 'dun' ? '' : (ean || '');
+        // Como o EAN não é auto-derivado, eanInicial será '' (vazio) para permitir escanear/digitar
+        const eanInicial = ean || '';
         setCadastroNaoIdentificado({ ean: eanInicial, dun, validadeTemp: validade || '' });
         return;
       }
-      // ✅ Usa o EAN cadastrado na base, nunca o derivado do DUN
+      // ✅ Usa o EAN cadastrado na base
       ean = produtoEncontrado.produtoEan;
     }
     // 2) Senão, busca pelo EAN (caso o código seja só EAN)
@@ -199,6 +195,12 @@ function HomeContent() {
       return;
     }
     // ========== FIM DA CORREÇÃO ==========
+
+    // Valida duplicidade usando o EAN resolvido (seja pelo scan ou pela base)
+    if (ean && scannedEans.has(ean)) {
+      showToast('Este código já foi adicionado à lista nesta sessão.', 'error');
+      return;
+    }
 
     // Se já veio com validade (ex: QRCode com data), mostra confirmação direta
     if (validade) {

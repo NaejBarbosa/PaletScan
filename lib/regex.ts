@@ -42,17 +42,17 @@ export function validarDataReal(dateStr: string): boolean {
  */
 function extrairDadosDataMatrix(qrData: string) {
   const clean = qrData.trim().replace(/\s/g, ''); // remove espaços e quebras de linha
-  // Busca pelo padrão: 14 dígitos, ponto e vírgula, 8 dígitos
-  const regex = /(\d{14});(\d{8})/;
+  // O DUN é a segunda cadeia de caracteres depois de ";" e seguido de ";" mais 8 caracteres para a data de fabricação.
+  // Exemplo de padrão: 315492;17896419732553;202603062002148;
+  const regex = /^[^;]*;([^;]+);(\d{8})/;
   const match = clean.match(regex);
 
   if (!match || !match[1] || !match[2]) {
     return null;
   }
 
-  const dun14 = match[1];            // ex: "27896419728751"
-  const ean13 = dun14.substring(1);  // ex: "7896419728751"
-  const dataFabStr = match[2];       // ex: "20260319"
+  const dun14 = match[1];            // ex: "17896419732553" (ou com 1 dígito a menos)
+  const dataFabStr = match[2];       // ex: "20260306"
 
   const anoFab = parseInt(dataFabStr.substring(0, 4), 10);
   const mesFab = parseInt(dataFabStr.substring(4, 6), 10);
@@ -77,7 +77,7 @@ function extrairDadosDataMatrix(qrData: string) {
 
   return {
     dun: dun14,
-    ean: ean13,
+    ean: undefined,
     validade: validadeFormatada,
   };
 }
@@ -128,30 +128,29 @@ export function extrairDados(text: string) {
     }
   }
 
-  // 4. DUN-14 isolado (14 dígitos) - ACEITA QUALQUER PRIMEIRO DÍGITO
-  const dunRegex = /\b(\d{14})\b/;
+  // 4. DUN-14 isolado (14 dígitos)
+  const dunRegex = /^\d{14}$/;
   const dunMatch = clean.match(dunRegex);
   if (dunMatch) {
-    const dun = dunMatch[1];
-    const ean = dun.substring(1);
-    console.log('[extrairDados] DUN-14 detectado -> DUN:', dun, 'EAN:', ean);
-    return { dun, ean, validade: null, tipo: 'dun' as const };
+    const dun = dunMatch[0];
+    console.log('[extrairDados] DUN-14 detectado -> DUN:', dun);
+    return { dun, ean: undefined, validade: null, tipo: 'dun' as const };
   }
 
-  // 5. EAN-13 isolado
-  const eanRegex = /\b(\d{13})\b/;
+  // 5. EAN-13 isolado - cadeia isolada de 13 dígitos apenas (nada antes, nada depois)
+  const eanRegex = /^\d{13}$/;
   const eanMatch = clean.match(eanRegex);
   if (eanMatch) {
-    const ean = eanMatch[1];
+    const ean = eanMatch[0];
     console.log('[extrairDados] EAN isolado detectado -> EAN:', ean);
     return { ean, validade: null, tipo: 'ean' as const };
   }
 
-  // 6. EAN-8 isolado
-  const ean8Regex = /\b(\d{8})\b/;
+  // 6. EAN-8 isolado - cadeia isolada de 8 dígitos apenas (nada antes, nada depois)
+  const ean8Regex = /^\d{8}$/;
   const ean8Match = clean.match(ean8Regex);
   if (ean8Match) {
-    const ean = ean8Match[1];
+    const ean = ean8Match[0];
     console.log('[extrairDados] EAN-8 detectado -> EAN:', ean);
     return { ean, validade: null, tipo: 'ean' as const };
   }
