@@ -28,6 +28,18 @@ export default function Scanner({ onDetected }: ScannerProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (scanning) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [scanning]);
+
+
   const stopScanning = async () => {
     if (readerRef.current) {
       readerRef.current.reset();
@@ -292,15 +304,13 @@ export default function Scanner({ onDetected }: ScannerProps) {
         </div>
       )}
 
-      {/* Container Principal do Scanner com altura dinâmica */}
-      <div className={`relative w-full overflow-hidden transition-all duration-500 ease-in-out ${
-        scanning
-          ? 'h-[50vh] md:h-[60vh] bg-black rounded-2xl shadow-2xl'
-          : 'h-auto bg-slate-50 dark:bg-slate-900/10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 text-center'
-      }`}>
+      {/* Container Principal do Scanner (Compacto na página, ativa overlay fixed ao escanear) */}
+      <div className="relative w-full overflow-hidden bg-slate-50 dark:bg-slate-900/10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 text-center">
         
-        {/* Interface Ativa do Scanner */}
-        <div className={`absolute inset-0 transition-opacity duration-300 ${scanning ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {/* Interface Ativa do Scanner (Fullscreen Overlay) */}
+        <div className={`fixed inset-0 z-50 bg-black transition-opacity duration-300 ${
+          scanning ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}>
           {/* Vídeo com object-fit cover para zoom natural */}
           <video
             ref={videoRef}
@@ -310,48 +320,73 @@ export default function Scanner({ onDetected }: ScannerProps) {
           />
 
           {/* Overlay escurecido nas bordas, mantendo centro claro */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/70 pointer-events-none" />
+
+          {/* Barra superior do Scanner Fullscreen */}
+          <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-6 z-20">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-success-500 animate-ping" />
+              <span className="text-white font-medium text-base">Escaneador Ativo</span>
+            </div>
+            <button
+              onClick={stopScanning}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              title="Fechar câmera"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
           {/* Viewfinder central sutil (quatro cantos) */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="relative w-56 h-56 md:w-64 md:h-64 animate-scale-in">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div className="relative w-64 h-64 md:w-80 md:h-80 animate-scale-in">
               {/* Cantos L-shaped */}
-              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/80 rounded-tl-xl" />
-              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white/80 rounded-tr-xl" />
-              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white/80 rounded-bl-xl" />
-              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white/80 rounded-br-xl" />
+              <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-success-500 rounded-tl-2xl" />
+              <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-success-500 rounded-tr-2xl" />
+              <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-success-500 rounded-bl-2xl" />
+              <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-success-500 rounded-br-2xl" />
+              
+              {/* Linha laser de escaneamento animada */}
+              <div className="absolute top-0 left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-success-400 to-transparent shadow-[0_0_8px_#22c55e] animate-scanner-laser" />
               {/* Animação sutil de pulsação */}
-              <div className="absolute inset-0 border border-white/20 rounded-2xl animate-pulse-subtle" />
+              <div className="absolute inset-0 border border-success-500/20 rounded-2xl animate-pulse-subtle" />
             </div>
           </div>
 
-          {/* Instrução flutuante minimalista */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full text-white text-xs font-medium whitespace-nowrap">
-            Centralize o código no quadro
-          </div>
+          {/* Instruções e controles na parte inferior */}
+          <div className="absolute bottom-10 inset-x-0 flex flex-col items-center gap-4 z-20 px-6 animate-slideUp">
+            <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full text-white text-xs md:text-sm font-medium whitespace-nowrap shadow-lg border border-white/10 mb-2">
+              Posicione o código de barras ou Data Matrix no centro do quadro
+            </div>
 
-          {/* Controles flutuantes sobre o vídeo */}
-          <div className="absolute bottom-16 left-0 right-0 flex flex-wrap gap-3 justify-center px-4 z-10">
-            <button onClick={stopScanning} className="btn-danger shadow-lg flex items-center gap-2" disabled={processing}>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-              </svg>
-              Parar Scanner
-            </button>
-            <button
-              onClick={() => {
-                stopScanning();
-                setTimeout(() => fileInputRef.current?.click(), 100);
-              }}
-              className="px-4 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-medium text-sm transition-colors flex items-center gap-2 border border-white/10"
-              disabled={processing}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Ler da Galeria
-            </button>
+            <div className="flex gap-3 justify-center w-full max-w-xs">
+              <button
+                onClick={() => {
+                  stopScanning();
+                  setTimeout(() => fileInputRef.current?.click(), 100);
+                }}
+                className="flex-1 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 border border-white/10 shadow-lg"
+                disabled={processing}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Galeria
+              </button>
+              
+              <button
+                onClick={stopScanning}
+                className="flex-1 px-5 py-3 rounded-xl bg-danger-600 hover:bg-danger-700 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-lg"
+                disabled={processing}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
 
