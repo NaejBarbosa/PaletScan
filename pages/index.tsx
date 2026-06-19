@@ -329,25 +329,25 @@ function HomeContent() {
   // ============================================
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-slate-200/80 dark:border-slate-800/85">
+      <header className="sticky top-0 z-40 glass border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-slate-800 flex items-center justify-center shadow-sm">
-                <svg className="w-5 h-5 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-md">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-base font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
+                <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                   Controle de Recebimento
                 </h1>
                 {/* Badge câmara/vaga da sessão */}
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">
-                    <svg className="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -357,7 +357,7 @@ function HomeContent() {
                     id="btn-redefinir-sessao"
                     onClick={redefinirSessao}
                     title="Redefinir câmara/vaga"
-                    className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                    className="text-xs text-slate-400 dark:text-slate-500 hover:text-danger-500 dark:hover:text-danger-400 transition-colors underline underline-offset-2"
                   >
                     redefinir
                   </button>
@@ -386,42 +386,42 @@ function HomeContent() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="card p-5 animate-slideUp" style={{ animationDelay: '0ms' }}>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 flex items-center justify-center text-slate-500 dark:text-slate-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+          <div className="card p-4 animate-slideUp" style={{ animationDelay: '0ms' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Produtos na Base</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{produtosValidos.length}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Produtos na Base</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{produtosValidos.length}</p>
               </div>
             </div>
           </div>
-          <div className="card p-5 animate-slideUp" style={{ animationDelay: '50ms' }}>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 flex items-center justify-center text-slate-500 dark:text-slate-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div className="card p-4 animate-slideUp" style={{ animationDelay: '50ms' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-success-100 dark:bg-success-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-success-600 dark:text-success-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Escaneados</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{scannedEans.size}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Escaneados</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{scannedEans.size}</p>
               </div>
             </div>
           </div>
-          <div className="card p-5 animate-slideUp" style={{ animationDelay: '100ms' }}>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 flex items-center justify-center text-slate-500 dark:text-slate-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div className="card p-4 animate-slideUp" style={{ animationDelay: '100ms' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pendentes</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{itensRegistrados.length}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Pendentes</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{itensRegistrados.length}</p>
               </div>
             </div>
           </div>
@@ -429,9 +429,9 @@ function HomeContent() {
 
         {/* Scanner Card */}
         <div className="card-elevated overflow-hidden animate-slideUp" style={{ animationDelay: '150ms' }}>
-          <div className="px-5 py-4 border-b border-slate-150 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10">
-            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-2.5">
-              <svg className="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
               Escaneador de Código
@@ -445,37 +445,37 @@ function HomeContent() {
         {/* Lista de produtos pendentes com coluna Conservação após Classe */}
         {itensRegistrados.length > 0 && (
           <div className="card-elevated overflow-hidden animate-slideUp">
-            <div className="px-5 py-4 border-b border-slate-150 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10 flex justify-between items-center flex-wrap gap-3">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/30 dark:border-slate-700/50 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold tracking-tight text-slate-800 dark:text-slate-200 uppercase">
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                     Produtos Adicionados
                   </h2>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {itensRegistrados.length} item(ns) aguardando gravação
                   </p>
                 </div>
               </div>
-              <button onClick={gravarTodosNoBanco} disabled={isSubmitting} className="btn-success text-xs font-semibold uppercase tracking-wider py-2">
+              <button onClick={gravarTodosNoBanco} disabled={isSubmitting} className="btn-success">
                 {isSubmitting ? 'Gravando...' : 'Gravar Todos'}
               </button>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full table-auto border-separate border-spacing-0">
-                <thead className="bg-slate-50/40 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800/40">
+                <thead className="bg-slate-100 dark:bg-slate-800/50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Marca</th>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Produto</th>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Classe</th>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Conservação</th>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Validade</th>
-                    <th className="px-4 py-3 text-right text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Ações</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Marca</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Produto</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Classe</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Conservação</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Validade</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -484,13 +484,13 @@ function HomeContent() {
                       <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">{item.marcaDescr}</td>
                       <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">{item.produtoDescr}</td>
                       <td className="px-4 py-3 text-sm whitespace-nowrap">
-                        <span className="badge badge-classe">{item.produtoClasse}</span>
+                        <span className="badge badge-primary">{item.produtoClasse}</span>
                       </td>
                       <td className="px-4 py-3 text-sm whitespace-nowrap">
                         <span className={`badge ${
                           item.produtoConservacao?.toLowerCase().includes('congelado')
-                            ? 'badge-congelado'
-                            : 'badge-resfriado'
+                            ? 'badge-primary'
+                            : 'badge-warning'
                         }`}>
                           {item.produtoConservacao || '—'}
                         </span>
@@ -521,56 +521,56 @@ function HomeContent() {
 
       {/* Modal de confirmação com backdrop corrigido e conservação */}
       {confirmacao && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
           <div className="card-elevated max-w-md w-full p-6 animate-scale-in m-4">
             <div className="flex items-start gap-4 mb-5">
-              <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 text-slate-700 dark:text-slate-300 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
-                <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-success-500 to-success-700 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Produto Detectado</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Confirme as especificações do item</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Confirme os dados antes de adicionar</p>
               </div>
             </div>
 
-            <div className="bg-slate-50/20 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/60 rounded-xl p-4 mb-5 space-y-4">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 mb-5 space-y-3">
               {confirmacao.dun && (
-                <div className="flex justify-between items-start gap-4">
-                  <span className="font-semibold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider mt-1">DUN</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200 text-right break-all text-base font-bold">{confirmacao.dun}</span>
+                <div className="flex justify-between items-start gap-4 text-sm">
+                  <span className="font-medium text-slate-500 dark:text-slate-400">DUN</span>
+                  <span className="font-mono text-slate-900 dark:text-slate-100 text-right break-all">{confirmacao.dun}</span>
                 </div>
               )}
-              <div className="flex justify-between items-start gap-4">
-                <span className="font-semibold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider mt-1">EAN</span>
-                <span className="font-mono text-slate-800 dark:text-slate-200 text-right break-all text-base font-bold">{confirmacao.ean}</span>
+              <div className="flex justify-between items-start gap-4 text-sm">
+                <span className="font-medium text-slate-500 dark:text-slate-400">EAN</span>
+                <span className="font-mono text-slate-900 dark:text-slate-100 text-right break-all">{confirmacao.ean}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider">Validade</span>
-                <span className="font-bold text-slate-900 dark:text-slate-100 text-base">{confirmacao.validade}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-medium text-slate-500 dark:text-slate-400">Validade</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100">{confirmacao.validade}</span>
               </div>
-              <div className="border-t border-slate-150 dark:border-slate-800/80 pt-4 mt-4 space-y-4">
-                <div className="flex justify-between items-start gap-4">
-                  <span className="font-semibold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider mt-0.5">Marca</span>
-                  <span className="text-slate-800 dark:text-slate-200 text-right font-bold text-base">{confirmacao.produto.marcaDescr}</span>
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-3 mt-3 space-y-2">
+                <div className="flex justify-between items-start gap-4 text-sm">
+                  <span className="font-medium text-slate-500 dark:text-slate-400">Marca</span>
+                  <span className="text-slate-900 dark:text-slate-100 text-right">{confirmacao.produto.marcaDescr}</span>
                 </div>
-                <div className="flex justify-between items-start gap-4">
-                  <span className="font-semibold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider mt-0.5">Produto</span>
-                  <span className="text-slate-800 dark:text-slate-200 text-right font-bold text-base leading-snug">{confirmacao.produto.produtoDescr}</span>
+                <div className="flex justify-between items-start gap-4 text-sm">
+                  <span className="font-medium text-slate-500 dark:text-slate-400">Produto</span>
+                  <span className="text-slate-900 dark:text-slate-100 text-right">{confirmacao.produto.produtoDescr}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider">Classe</span>
-                  <span className="badge badge-classe py-1 px-3 text-sm font-bold">{confirmacao.produto.produtoClasse}</span>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-medium text-slate-500 dark:text-slate-400">Classe</span>
+                  <span className="badge badge-primary">{confirmacao.produto.produtoClasse}</span>
                 </div>
                 {/* Conservação */}
                 {confirmacao.produto.produtoConservacao && (
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider">Conservação</span>
-                    <span className={`badge py-1 px-3 text-sm font-bold ${
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-slate-500 dark:text-slate-400">Conservação</span>
+                    <span className={`badge ${
                       confirmacao.produto.produtoConservacao.toLowerCase().includes('congelado') 
-                        ? 'badge-congelado' 
-                        : 'badge-resfriado'
+                        ? 'badge-primary' 
+                        : 'badge-warning'
                     }`}>
                       {confirmacao.produto.produtoConservacao}
                     </span>
@@ -580,17 +580,17 @@ function HomeContent() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <button onClick={handleAdicionarLista} className="btn-success w-full text-xs font-semibold uppercase tracking-wider py-3">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <button onClick={handleAdicionarLista} className="btn-success w-full">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                Adicionar à Lista
+                Adicionar a Lista
               </button>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={handleNovaLeitura} className="btn-secondary text-xs font-semibold uppercase tracking-wider py-2.5">
+                <button onClick={handleNovaLeitura} className="btn-secondary">
                   Nova Leitura
                 </button>
-                <button onClick={handleDescartar} className="btn-danger text-xs font-semibold uppercase tracking-wider py-2.5">
+                <button onClick={handleDescartar} className="btn-danger">
                   Descartar
                 </button>
               </div>
@@ -622,30 +622,30 @@ function HomeContent() {
       {/* Toast */}
       {toast && (
         <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center items-center px-4 pointer-events-none">
-          <div className={`pointer-events-auto flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl shadow-elevated border max-w-md w-full sm:w-auto animate-toast ${
+          <div className={`pointer-events-auto flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border max-w-md w-full sm:w-auto animate-toast ${
             toast.type === 'success' 
-              ? 'bg-white dark:bg-slate-900 border-emerald-100/80 dark:border-emerald-950/20 text-emerald-800 dark:text-emerald-400' 
+              ? 'bg-white dark:bg-slate-900 border-success-300 dark:border-success-800 text-success-700 dark:text-success-400' 
               : toast.type === 'error' 
-              ? 'bg-white dark:bg-slate-900 border-rose-100/80 dark:border-rose-950/20 text-rose-800 dark:text-rose-400' 
-              : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200'
+              ? 'bg-white dark:bg-slate-900 border-danger-300 dark:border-danger-800 text-danger-700 dark:text-danger-400' 
+              : 'bg-white dark:bg-slate-900 border-primary-300 dark:border-primary-800 text-primary-700 dark:text-primary-400'
           }`}>
             {toast.type === 'success' && (
-              <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-success-600 dark:text-success-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}
             {toast.type === 'error' && (
-              <svg className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-danger-600 dark:text-danger-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             )}
             {toast.type === 'info' && (
-              <svg className="w-5 h-5 text-slate-655 dark:text-slate-400 flex-shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             )}
-            <span className="font-semibold text-xs text-center break-words leading-tight">{toast.message}</span>
+            <span className="font-medium text-sm text-center break-words leading-tight">{toast.message}</span>
           </div>
         </div>
       )}

@@ -73,10 +73,11 @@ function SearchableSelect({
 
   return (
     <div className="relative mb-4 w-full" ref={containerRef}>
-      <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-        {label} {required && <span className="text-rose-500">*</span>}
+      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
-      <div className="relative">        <input
+      <div className="relative">
+        <input
           type="text"
           placeholder={placeholder}
           value={search}
@@ -85,7 +86,7 @@ function SearchableSelect({
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          className="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-4 focus:ring-slate-500/5 transition-all duration-200 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+          className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:border-primary-500 transition-all text-sm text-slate-900 dark:text-slate-100"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,9 +106,9 @@ function SearchableSelect({
                   setSearch(opt.label);
                   setIsOpen(false);
                 }}
-                className="px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 cursor-pointer transition-colors"
+                className="px-4 py-2.5 text-sm hover:bg-primary-50 dark:hover:bg-primary-900/30 text-slate-700 dark:text-slate-300 cursor-pointer transition-colors"
               >
-                {opt.label} {opt.value !== opt.label && <span className="text-xs text-slate-400 dark:text-slate-500">({opt.value})</span>}
+                {opt.label} {opt.value !== opt.label && <span className="text-xs text-slate-400">({opt.value})</span>}
               </li>
             ))
           ) : (
@@ -315,12 +316,12 @@ export default function CadastroProdutoModal({
           </div>
         </div>
       ) : (
-        <div className="relative z-10 w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-scale-in my-8">
+        <div className="relative z-10 w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-scale-in my-8">
           {/* Header */}
-          <div className="px-6 py-5 border-b border-slate-150 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/20">
+          <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <svg className="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-8 h-8 rounded-lg bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
@@ -334,19 +335,19 @@ export default function CadastroProdutoModal({
           {/* Form Content */}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto space-y-4">
             {errorMsg && (
-              <div className="flex items-start gap-2.5 bg-rose-50/50 dark:bg-rose-950/10 border border-rose-100/80 dark:border-rose-900/30 rounded-xl px-4 py-3">
-                <svg className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="flex items-start gap-2.5 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-xl px-4 py-3">
+                <svg className="w-5 h-5 text-danger-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-sm font-medium text-rose-700 dark:text-rose-400 leading-normal">{errorMsg}</span>
+                <span className="text-sm font-medium text-danger-700 dark:text-danger-300">{errorMsg}</span>
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* EAN */}
               <div>
-                <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Produto EAN <span className="text-rose-500">*</span>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
+                  Produto EAN <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -355,13 +356,13 @@ export default function CadastroProdutoModal({
                     onChange={(e) => setEanInput(e.target.value.replace(/\D/g, ''))}
                     disabled={isEanFixed}
                     placeholder="Ex: 7891234567890"
-                    className="flex-1 px-4 py-2.5 bg-slate-50/50 dark:bg-slate-800 disabled:bg-slate-100/50 dark:disabled:bg-slate-800/30 disabled:text-slate-400 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-4 focus:ring-slate-500/5 transition-all duration-200 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+                    className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:text-slate-500 border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:border-primary-500 transition-all text-sm text-slate-900 dark:text-slate-100"
                   />
                   {!isEanFixed && (
                     <button
                       type="button"
                       onClick={() => setActiveScanField('ean')}
-                      className="px-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-xl transition-colors font-medium"
+                      className="px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl transition-colors"
                       title="Escanear EAN"
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -374,8 +375,8 @@ export default function CadastroProdutoModal({
 
               {/* DUN */}
               <div>
-                <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Produto DUN <span className="text-rose-500">*</span>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
+                  Produto DUN <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -384,13 +385,13 @@ export default function CadastroProdutoModal({
                     onChange={(e) => setDunInput(e.target.value.replace(/\D/g, ''))}
                     disabled={isDunFixed}
                     placeholder="Ex: 17891234567897"
-                    className="flex-1 px-4 py-2.5 bg-slate-50/50 dark:bg-slate-800 disabled:bg-slate-100/50 dark:disabled:bg-slate-800/30 disabled:text-slate-400 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-4 focus:ring-slate-500/5 transition-all duration-200 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+                    className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:text-slate-500 border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:border-primary-500 transition-all text-sm text-slate-900 dark:text-slate-100"
                   />
                   {!isDunFixed && (
                     <button
                       type="button"
                       onClick={() => setActiveScanField('dun')}
-                      className="px-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-xl transition-colors font-medium"
+                      className="px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl transition-colors"
                       title="Escanear DUN"
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -437,36 +438,36 @@ export default function CadastroProdutoModal({
 
             {/* DESCRIÇÃO PRODUTO */}
             <div>
-              <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                Descrição do Produto <span className="text-rose-500">*</span>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
+                Descrição do Produto <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={produtoDescr}
                 onChange={(e) => setProdutoDescr(e.target.value)}
                 placeholder="Ex: SUCO DE UVA INTEGRAL 1L"
                 rows={3}
-                className="w-full px-4 py-2.5 bg-slate-50/50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-none focus:border-slate-400 dark:focus:border-slate-600 focus:ring-4 focus:ring-slate-500/5 transition-all duration-200 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:border-primary-500 transition-all text-sm text-slate-900 dark:text-slate-100"
               />
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="px-6 py-4 border-t border-slate-150 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/20 flex flex-col sm:flex-row gap-3 justify-end">
+          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex flex-col sm:flex-row gap-3 justify-end">
             <button
               onClick={onClose}
               disabled={isSaving}
-              className="btn-secondary w-full sm:w-auto text-xs font-semibold uppercase tracking-wider py-2.5"
+              className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-all text-sm"
             >
               Descartar
             </button>
             <button
               onClick={handleGravar}
               disabled={isSaving}
-              className="btn-primary w-full sm:w-auto text-xs font-semibold uppercase tracking-wider py-2.5 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-5 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white font-semibold rounded-xl transition-all text-sm flex items-center justify-center gap-2"
             >
               {isSaving ? (
                 <>
-                  <svg className="w-4 h-4 animate-spin text-white dark:text-slate-950" fill="none" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
@@ -474,7 +475,7 @@ export default function CadastroProdutoModal({
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                   Gravar Dados

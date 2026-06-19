@@ -66,15 +66,17 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
       {/* Card principal */}
       <div className="w-full max-w-lg animate-slideUp">
+
+        {/* Header do card */}
         <div className="card-elevated overflow-hidden">
-          <div className="bg-slate-50/30 dark:bg-slate-900/20 p-6 border-b border-slate-150 dark:border-slate-800">
+          <div className="bg-gradient-to-br from-primary-600 to-primary-800 p-6 text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-slate-700 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round"
                       d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round"
@@ -82,15 +84,15 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-lg font-bold tracking-tight text-slate-800 dark:text-slate-200 uppercase">Selecionar Destino</h1>
-                  <p className="text-slate-400 text-xs mt-0.5">Câmara e vaga para esta sessão</p>
+                  <h1 className="text-xl font-bold">Selecionar Destino</h1>
+                  <p className="text-primary-200 text-sm">Câmara e vaga para esta sessão</p>
                 </div>
               </div>
 
               {/* Botão de Tema */}
               <button
                 onClick={toggleTheme}
-                className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                className="p-2.5 rounded-xl bg-white/10 dark:bg-white/5 text-white hover:bg-white/20 transition-colors"
                 aria-label="Alternar tema"
               >
                 {theme === 'dark' ? (
@@ -110,12 +112,13 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
 
             {/* Seleção de Câmara */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                 Câmara
               </label>
               <div className="grid grid-cols-1 gap-2">
                 {CAMARAS.map((camara) => {
                   const isSelected = camaraSelecionada === camara;
+                  const isCongelado = camara.toLowerCase().includes('congelado');
                   return (
                     <button
                       key={camara}
@@ -125,23 +128,27 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
                         setVagaSelecionada('');
                       }}
                       className={`
-                        flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all duration-250
+                        flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-all duration-200
                         ${isSelected
-                          ? 'border-slate-900 dark:border-slate-100 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-950 shadow-sm font-semibold'
-                          : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-slate-700 dark:text-slate-350 hover:border-slate-300 dark:hover:border-slate-700'
+                          ? isCongelado
+                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                            : 'border-warning-500 bg-warning-50 dark:bg-warning-900/30 text-warning-700 dark:text-warning-300'
+                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-primary-300 dark:hover:border-primary-700'
                         }
                       `}
                     >
                       <span className={`flex-shrink-0 ${isSelected
-                        ? 'text-white dark:text-slate-950'
+                        ? isCongelado ? 'text-primary-500' : 'text-warning-500'
                         : 'text-slate-400 dark:text-slate-500'}`}>
                         {getCamaraIcon(camara)}
                       </span>
-                      <span className="text-sm font-medium">{camara}</span>
+                      <span className="font-medium">{camara}</span>
                       {isSelected && (
-                        <span className="ml-auto text-white dark:text-slate-950">
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        <span className="ml-auto">
+                          <svg className="w-5 h-5 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd" />
                           </svg>
                         </span>
                       )}
@@ -153,14 +160,14 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
 
             {/* Seleção de Vaga */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                 Vaga
               </label>
 
               {/* Campo de busca */}
               <div className="relative">
                 <svg
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -171,12 +178,12 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
                   placeholder="Buscar vaga... ex: A10"
                   value={buscaVaga}
                   onChange={(e) => setBuscaVaga(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-4 focus:ring-slate-500/5 focus:border-slate-400 dark:focus:border-slate-600 transition-all duration-200 placeholder-slate-400 dark:placeholder-slate-500"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                 />
               </div>
 
               {/* Grid de vagas */}
-              <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/20 p-2">
+              <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2">
                 {vagasFiltradas.length === 0 ? (
                   <p className="text-center text-slate-400 dark:text-slate-500 text-sm py-4">
                     Nenhuma vaga encontrada
@@ -191,10 +198,10 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
                           id={`vaga-${vaga}`}
                           onClick={() => setVagaSelecionada(vaga)}
                           className={`
-                            py-2.5 px-1 rounded-lg text-xs font-semibold transition-all duration-150 text-center border
+                            py-2 px-1 rounded-lg text-xs font-semibold transition-all duration-150 text-center
                             ${isSelected
-                              ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-950 border-slate-900 dark:border-slate-100 shadow-sm scale-105'
-                              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700'
+                              ? 'bg-primary-600 text-white shadow-md scale-105'
+                              : 'bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:text-primary-700 dark:hover:text-primary-300'
                             }
                           `}
                         >
@@ -209,20 +216,22 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
               {/* Vaga selecionada: badge de confirmação ou erro de vaga ocupada */}
               {vagaSelecionada && (
                 isOcupada ? (
-                  <div className="mt-3 w-full flex items-start gap-2.5 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-150 dark:border-rose-900/40 rounded-xl px-3 py-2.5 animate-scale-in">
-                    <svg className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <div className="mt-3 flex items-start gap-2 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg px-3 py-2 animate-scale-in">
+                    <svg className="w-4 h-4 text-danger-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    <span className="text-xs font-semibold text-rose-800 dark:text-rose-400 leading-normal flex-1">
+                    <span className="text-xs font-medium text-danger-700 dark:text-danger-300">
                       Esta combinação de câmara e vaga já está sendo utilizada.
                     </span>
                   </div>
                 ) : (
-                  <div className="w-full flex items-center gap-2.5 text-sm text-emerald-800 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 rounded-xl px-3 py-2.5">
-                    <svg className="w-4 h-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <div className="flex items-center gap-2 text-sm text-success-700 dark:text-success-400 bg-success-50 dark:bg-success-900/20 rounded-lg px-3 py-2">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd" />
                     </svg>
-                    <span className="flex-1 text-xs font-semibold text-emerald-800 dark:text-emerald-400">Vaga selecionada: <strong className="font-bold">{vagaSelecionada}</strong></span>
+                    <span>Vaga selecionada: <strong>{vagaSelecionada}</strong></span>
                   </div>
                 )
               )}
@@ -230,17 +239,17 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
 
             {/* Resumo da seleção */}
             {podeConfirmar && (
-              <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 space-y-1.5 border border-slate-200/60 dark:border-slate-800">
-                <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+              <div className="bg-slate-100 dark:bg-slate-800/60 rounded-xl p-4 space-y-1 border border-slate-200 dark:border-slate-700">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
                   Resumo da Sessão
                 </p>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">Câmara</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{camaraSelecionada}</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">{camaraSelecionada}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">Vaga</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{vagaSelecionada}</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">{vagaSelecionada}</span>
                 </div>
               </div>
             )}
@@ -253,8 +262,8 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
               className={`
                 w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2
                 ${podeConfirmar
-                  ? 'bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-950 shadow-sm active:scale-[0.98]'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700'
+                  ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                 }
               `}
             >
