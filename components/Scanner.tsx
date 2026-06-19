@@ -313,48 +313,48 @@ export default function Scanner({ onDetected }: ScannerProps) {
       <div className="relative w-full overflow-hidden bg-slate-50 dark:bg-slate-900/10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 md:p-12 text-center">
         {/* Interface Inativa / Placeholder */}
         <div className={`flex flex-col items-center justify-center transition-opacity duration-300 ${!scanning ? 'opacity-100' : 'opacity-0 pointer-events-none absolute inset-0'}`}>
-          {/* Ícone de câmera estilizado */}
-          <div className="w-16 h-16 rounded-2xl bg-primary-50 dark:bg-primary-950/40 flex items-center justify-center text-primary-600 dark:text-primary-400 mb-4 border border-primary-100 dark:border-primary-900/30 shadow-sm">
+          {/* Ícone de câmera estilizado e minimalista */}
+          <div className="w-16 h-16 rounded-2xl bg-primary-50 dark:bg-primary-950/20 flex items-center justify-center text-primary-500 mb-5 border border-primary-100 dark:border-primary-900/30 shadow-sm">
             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
             </svg>
           </div>
 
-          <h3 className="text-slate-800 dark:text-slate-200 font-semibold text-base mb-1.5">Leitor de Código Desativado</h3>
+          <h3 className="text-slate-800 dark:text-slate-200 font-semibold text-base mb-1.5">Leitor de Código de Barras</h3>
           <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mb-6 leading-relaxed">
-            Inicie a câmera para escanear os códigos de barra dos produtos ou envie uma imagem diretamente da sua galeria.
+            Inicie o scanner para ler códigos usando a câmera do seu dispositivo ou faça o upload de uma imagem da galeria.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <button onClick={startScanning} className="btn-success flex items-center gap-2 shadow-md hover:shadow-lg transition-all" disabled={processing}>
+            <button onClick={startScanning} className="btn-primary flex items-center gap-2 shadow-md hover:shadow-lg transition-all" disabled={processing}>
               {processing ? (
                 <>
                   <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Iniciando...
+                  Carregando...
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  Iniciar Câmera
+                  Iniciar Leitor
                 </>
               )}
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium text-sm transition-all flex items-center gap-2"
+              className="btn-secondary transition-all flex items-center gap-2"
               disabled={processing}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              Ler da Galeria
+              Fazer Upload
             </button>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           </div>
@@ -374,58 +374,60 @@ export default function Scanner({ onDetected }: ScannerProps) {
             autoPlay
           />
 
-          {/* Overlay escurecido nas bordas, mantendo centro claro */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/70 pointer-events-none" />
-
           {/* Barra superior do Scanner Fullscreen */}
-          <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-6 z-20">
-            <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-success-500 animate-ping" />
-              <span className="text-white font-medium text-base">Escaneador Ativo</span>
+          <div className="absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-slate-950/80 via-slate-950/40 to-transparent flex items-center justify-between px-6 z-20">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-white/90 font-medium text-sm tracking-wider uppercase">Leitor Ativo</span>
             </div>
+            
             <button
               onClick={stopScanning}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-xl bg-slate-900/60 hover:bg-slate-900/80 text-white/80 hover:text-white backdrop-blur-md border border-white/10 transition-all"
               title="Fechar câmera"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* Viewfinder central sutil (quatro cantos) */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <div className="relative w-64 h-64 md:w-80 md:h-80 animate-scale-in">
-              {/* Cantos L-shaped */}
-              <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-success-500 rounded-tl-2xl" />
-              <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-success-500 rounded-tr-2xl" />
-              <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-success-500 rounded-bl-2xl" />
-              <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-success-500 rounded-br-2xl" />
+          {/* Viewfinder central minimalista com máscara escura no entorno */}
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+            <div className="relative w-64 h-64 md:w-72 md:h-72">
+              {/* Efeito de Máscara: Sombra gigante para escurecer o fundo fora do visor */}
+              <div className="absolute inset-0 rounded-3xl border border-white/30 shadow-[0_0_0_9999px_rgba(15,23,42,0.65)] backdrop-blur-[1px]" />
               
-              {/* Linha laser de escaneamento animada */}
-              <div className="absolute top-0 left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-success-400 to-transparent shadow-[0_0_8px_#22c55e] animate-scanner-laser" />
-              {/* Animação sutil de pulsação */}
-              <div className="absolute inset-0 border border-success-500/20 rounded-2xl animate-pulse-subtle" />
+              {/* Cantos minimalistas ultra-finos (Estilo Câmera Profissional / iOS) */}
+              <div className="absolute -top-1.5 -left-1.5 w-6 h-6 border-t-2 border-l-2 border-white rounded-tl-lg" />
+              <div className="absolute -top-1.5 -right-1.5 w-6 h-6 border-t-2 border-r-2 border-white rounded-tr-lg" />
+              <div className="absolute -bottom-1.5 -left-1.5 w-6 h-6 border-b-2 border-l-2 border-white rounded-bl-lg" />
+              <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 border-b-2 border-r-2 border-white rounded-br-lg" />
+
+              {/* Indicador de leitura ativo sutil e pulsante */}
+              <div className="absolute inset-4 border border-white/5 rounded-2xl animate-pulse-subtle" />
             </div>
           </div>
 
-          {/* Instruções e controles na parte inferior */}
-          <div className="absolute bottom-10 inset-x-0 flex flex-col items-center gap-4 z-20 px-6 animate-slideUp">
-            <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full text-white text-xs md:text-sm font-medium whitespace-nowrap shadow-lg border border-white/10 mb-2">
-              Posicione o código de barras ou Data Matrix no centro do quadro
-            </div>
+          {/* Controles e Instruções Flutuantes */}
+          <div className="absolute bottom-12 inset-x-0 flex flex-col items-center gap-6 z-20 px-6 animate-slideUp">
+            <p className="text-white/80 text-xs md:text-sm font-medium tracking-wide uppercase text-center max-w-xs drop-shadow-sm">
+              Alinhe o código de barras no visor
+            </p>
 
-            <div className="flex gap-3 justify-center w-full max-w-xs">
+            <div className="flex gap-4 justify-center w-full max-w-xs">
               <button
                 onClick={() => {
                   stopScanning();
                   setTimeout(() => fileInputRef.current?.click(), 100);
                 }}
-                className="flex-1 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 border border-white/10 shadow-lg"
+                className="flex-1 px-5 py-3 rounded-xl bg-slate-900/60 hover:bg-slate-900/80 backdrop-blur-md text-white font-medium text-sm transition-all flex items-center justify-center gap-2 border border-white/10 shadow-lg"
                 disabled={processing}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Galeria
@@ -433,13 +435,13 @@ export default function Scanner({ onDetected }: ScannerProps) {
               
               <button
                 onClick={stopScanning}
-                className="flex-1 px-5 py-3 rounded-xl bg-danger-600 hover:bg-danger-700 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-lg"
+                className="flex-1 px-5 py-3 rounded-xl bg-slate-900/60 hover:bg-slate-900/80 backdrop-blur-md text-white font-medium text-sm transition-all flex items-center justify-center gap-2 border border-white/10 shadow-lg"
                 disabled={processing}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                Cancelar
+                Fechar
               </button>
             </div>
           </div>
