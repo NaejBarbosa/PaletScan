@@ -139,7 +139,7 @@ function extrairDadosGS1Bruto(qrData: string) {
   
   console.log('[GS1Bruto] String limpa para busca:', JSON.stringify(clean));
   
-  const regex = /01(\d{14})17(\d{6})/;
+  const regex = /01(\d{14}).*?17(\d{6})/;
   const match = clean.match(regex);
 
   if (!match) {
