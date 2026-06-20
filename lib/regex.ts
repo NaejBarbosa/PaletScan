@@ -1,5 +1,44 @@
 // lib/regex.ts
 
+// Intercepta console.log e console.error no cliente para enviar ao Vercel
+if (typeof window !== 'undefined' && typeof fetch === 'function') {
+  const originalLog = console.log;
+  const originalError = console.error;
+
+  console.log = function (...args: any[]) {
+    originalLog.apply(console, args);
+    try {
+      const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+      if (msg.includes('[GS1Bruto]') || msg.includes('[extrairDados]')) {
+        fetch('/api/log-vercel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tipo: 'info', mensagem: msg }),
+        }).catch(() => {});
+      }
+    } catch (e) {
+      // Silencia falhas de formatação
+    }
+  };
+
+  console.error = function (...args: any[]) {
+    originalError.apply(console, args);
+    try {
+      const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+      if (msg.includes('[GS1Bruto]') || msg.includes('[extrairDados]')) {
+        fetch('/api/log-vercel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tipo: 'error', mensagem: msg }),
+        }).catch(() => {});
+      }
+    } catch (e) {
+      // Silencia falhas
+    }
+  };
+}
+
+
 /**
  * Valida se uma data é real (considera anos bissextos)
  */
