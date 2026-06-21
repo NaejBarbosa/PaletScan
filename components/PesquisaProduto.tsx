@@ -500,7 +500,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
               /* QR Code grande e centralizado */
               <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800 mb-5 text-center flex flex-col items-center justify-center animate-scale-in">
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-4">
-                  Escaneie com outro smartphone no sistema Rub
+                  Escaneie com o Rub para consultar o estoque
                 </p>
                 <div className="p-3 bg-white border-2 border-slate-100 dark:border-slate-800 rounded-xl shadow-inner">
                   <QRCodeSVG
