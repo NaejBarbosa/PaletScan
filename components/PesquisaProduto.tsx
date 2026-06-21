@@ -44,6 +44,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
   // Estados para o Modal de Detalhes
   const [selectedProduct, setSelectedProduct] = useState<ProdutoValido | null>(null);
   const [isWatchlistMatch, setIsWatchlistMatch] = useState(false);
+  const [isMatchCelebration, setIsMatchCelebration] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -86,10 +87,10 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
   };
 
   useEffect(() => {
-    if (selectedProduct && isWatchlistMatch) {
+    if (selectedProduct && isMatchCelebration) {
       triggerConfetti();
     }
-  }, [selectedProduct, isWatchlistMatch]);
+  }, [selectedProduct, isMatchCelebration]);
 
   const saveWatchlist = (list: ProdutoValido[]) => {
     setWatchlist(list);
@@ -198,6 +199,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
     const isMatch = watchlist.some((p) => p.produtoEan === foundProduct?.produtoEan);
     
     setIsWatchlistMatch(isMatch);
+    setIsMatchCelebration(isMatch);
     setSelectedProduct(foundProduct);
     setShowQRCode(false);
 
@@ -314,6 +316,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
                       <button
                         onClick={() => {
                           setIsWatchlistMatch(true);
+                          setIsMatchCelebration(false);
                           setSelectedProduct(prod);
                           setShowQRCode(false);
                         }}
@@ -384,6 +387,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
                   key={prod.produtoEan}
                   onClick={() => {
                     setIsWatchlistMatch(watchlist.some((w) => w.produtoEan === prod.produtoEan));
+                    setIsMatchCelebration(false);
                     setSelectedProduct(prod);
                     setShowQRCode(false);
                   }}
@@ -420,19 +424,19 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm px-4">
           <div
             className={`card-elevated max-w-md w-full p-6 animate-scale-in relative overflow-hidden ${
-              isWatchlistMatch
+              isMatchCelebration
                 ? 'border-2 border-success-500 shadow-elevated bg-gradient-to-b from-success-50/10 to-transparent dark:from-success-950/10 ring-4 ring-success-500/20'
                 : ''
             }`}
           >
             {/* Decoração Especial de Radar Match */}
-            {isWatchlistMatch && (
+            {isMatchCelebration && (
               <div className="absolute top-0 right-0 w-32 h-32 bg-success-500/10 rounded-bl-full pointer-events-none animate-pulse" />
             )}
 
             {/* Cabeçalho do Modal */}
             <div className="flex items-start gap-4 mb-5">
-              {isWatchlistMatch ? (
+              {isMatchCelebration ? (
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-success-500 to-success-600 flex items-center justify-center flex-shrink-0 shadow-lg animate-bounce ring-4 ring-success-500/30">
                   <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a3 3 0 10-3 3h3zm0-3a1 1 0 100-2 1 1 0 000 2zm0 8a2 2 0 110-4 2 2 0 010 4z" />
@@ -447,11 +451,11 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-extrabold ${isWatchlistMatch ? 'text-success-700 dark:text-success-400' : 'text-slate-900 dark:text-slate-100'}`}>
-                  {isWatchlistMatch ? '🎯 PRODUTO LOCALIZADO!' : 'Ficha Técnica'}
+                <h3 className={`text-lg font-extrabold ${isMatchCelebration ? 'text-success-700 dark:text-success-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                  {isMatchCelebration ? '🎯 PRODUTO LOCALIZADO!' : 'Ficha Técnica'}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  {isWatchlistMatch ? 'Este produto estava na sua Lista de Procurados.' : 'Dados cadastrais da base de dados.'}
+                  {isMatchCelebration ? 'Este produto estava na sua Lista de Procurados.' : 'Dados cadastrais da base de dados.'}
                 </p>
               </div>
             </div>
