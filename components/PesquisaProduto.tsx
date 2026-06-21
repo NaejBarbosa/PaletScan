@@ -1,5 +1,5 @@
 // components/PesquisaProduto.tsx
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import confetti from 'canvas-confetti';
 import { QRCodeSVG } from 'qrcode.react';
@@ -39,6 +39,14 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
   
   // Estados para Busca Fuzzy
   const [searchTerm, setSearchTerm] = useState('');
+  const searchResultsRef = useRef<HTMLDivElement>(null);
+
+  // Reseta a rolagem do container ao mudar o termo de busca
+  useEffect(() => {
+    if (searchResultsRef.current) {
+      searchResultsRef.current.scrollTop = 0;
+    }
+  }, [searchTerm]);
   
   // Estados para Watchlist (Radar)
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
@@ -432,7 +440,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
               <p className="text-xs mt-1 text-slate-500">Verifique a grafia dos termos ou tente buscar por códigos de barras.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin">
+            <div ref={searchResultsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin">
               {filteredProducts.map((prod) => (
                 <button
                   key={`${prod.produtoEan}-${prod.produtoDun || ''}-${prod.marcaId}-${prod.produtoDescr}`}
