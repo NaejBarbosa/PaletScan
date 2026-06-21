@@ -39,14 +39,26 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
   
   // Estados para Busca Fuzzy
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const searchResultsRef = useRef<HTMLDivElement>(null);
 
-  // Reseta a rolagem do container ao mudar o termo de busca
+  // Executa debounce no termo de busca para evitar travamentos de renderização
   useEffect(() => {
-    if (searchResultsRef.current) {
-      searchResultsRef.current.scrollTop = 0;
-    }
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 180);
+    return () => clearTimeout(handler);
   }, [searchTerm]);
+
+  // Reseta a rolagem do container ao mudar o termo de busca debounced (após pintura do DOM)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchResultsRef.current) {
+        searchResultsRef.current.scrollTop = 0;
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [debouncedSearchTerm]);
   
   // Estados para Watchlist (Radar)
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
@@ -133,13 +145,13 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
   };
 
   const filteredProducts = useMemo(() => {
-    if (!searchTerm.trim() || searchTerm.trim().length < 2) return [];
+    if (!debouncedSearchTerm.trim() || debouncedSearchTerm.trim().length < 2) return [];
     
-    const termNorm = removeAccents(searchTerm);
+    const termNorm = removeAccents(debouncedSearchTerm);
     
     // Monta a string de busca de forma análoga ao app.py (Marca + Descrição + Classe)
     const textsNorm = produtosValidos.map((prod) => 
-      removeAccents(`${prod.marcaDescr} ${prod.produtoDescr} ${prod.produtoClasse}`)
+      removeAccents(`${prod?.marcaDescr || ''} ${prod?.produtoDescr || ''} ${prod?.produtoClasse || ''}`)
     );
 
     // Executa a extração usando o token_set_ratio do fuzzball (idêntico ao rapidfuzz do Python)
@@ -150,9 +162,11 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
       cutoff: 40
     });
 
-    // Retorna os produtos correspondentes ordenados pelo índice retornado
-    return results.map((r) => produtosValidos[r[2]]);
-  }, [searchTerm, produtosValidos]);
+    // Retorna os produtos correspondentes ordenados pelo índice retornado, garantindo que não são nulos/indefinidos
+    return results
+      .map((r) => produtosValidos[r[2]])
+      .filter((prod): prod is ProdutoValido => !!(prod && prod.produtoEan && prod.produtoDescr));
+  }, [debouncedSearchTerm, produtosValidos]);
 
   // 2. Lógica para Adicionar Produto na Watchlist (Radar)
   const toggleWatchlist = (product: ProdutoValido) => {
@@ -426,12 +440,12 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
           </div>
 
           {/* Listagem de Resultados */}
-          {searchTerm.trim() === '' ? (
+          {searchTerm.trim().length < 2 ? (
             <div className="text-center py-12 px-4 text-slate-400 dark:text-slate-500">
               <svg className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15" />
               </svg>
-              <p className="text-sm font-medium">Digite algum termo para pesquisar na base local</p>
+              <p className="text-sm font-medium">Digite pelo menos 2 caracteres para pesquisar</p>
               <p className="text-xs mt-1 text-slate-500">A pesquisa filtra instantaneamente na base de dados de produtos válidos.</p>
             </div>
           ) : filteredProducts.length === 0 ? (
@@ -450,7 +464,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
                     setSelectedProduct(prod);
                     setShowQRCode(false);
                   }}
-                  className="group card p-4 hover:border-primary-500/50 hover:scale-[1.01] hover:shadow-card-hover transition-all duration-300 text-left flex flex-col justify-between"
+                  className="group card p-4 hover:border-primary-500/50 hover:scale-[1.01] hover:shadow-card-hover transition-[border-color,transform,box-shadow] duration-200 text-left flex flex-col justify-between"
                 >
                   <div className="space-y-2">
                     <div className="flex justify-between items-start gap-2">

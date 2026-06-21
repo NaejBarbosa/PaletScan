@@ -24,10 +24,16 @@
 @layer components {
   .card {
     @apply bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-card;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .card-elevated {
     @apply bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-elevated;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .btn-primary {
@@ -125,48 +131,48 @@
   background-clip: padding-box;
 }
 
-/* Animações */
+/* Animações com aceleração de hardware */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: scale(0.98);
+    transform: scale(0.98) translate3d(0, 0, 0);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translate3d(0, 0, 0);
   }
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translate3d(0, 12px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-12px);
+    transform: translate3d(0, -12px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.92) translateY(8px);
+    transform: scale(0.92) translate3d(0, 8px, 0);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1) translate3d(0, 0, 0);
   }
 }
 
