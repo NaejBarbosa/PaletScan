@@ -98,6 +98,12 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
         score += 800;
       }
 
+      // Nova regra: Primeira palavra do título coincide exatamente com o primeiro termo de busca
+      const firstWordOfTitle = titleNorm.split(/\s+/)[0] || '';
+      if (terms[0] && firstWordOfTitle === terms[0]) {
+        score += 500;
+      }
+
       // Correspondência de termos individuais
       terms.forEach((term, idx) => {
         const isCommonWord = term.length <= 2;
@@ -112,16 +118,16 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
         // Match de Descrição (posição)
         const pos = titleNorm.indexOf(term);
         if (pos === 0) {
-          score += isCommonWord ? 30 : 200; // Começa com a palavra chave
+          score += isCommonWord ? 30 : 400; // Começa com a palavra chave (Aumentado para 400)
         } else if (pos > 0) {
           // Pontua melhor os matches que ocorrem mais próximos ao início da descrição
           score += isCommonWord ? 10 : Math.max(0, 100 - Math.floor(pos / 2));
         }
 
-        // Match exato de palavra inteira (Word Boundary)
+        // Match exato de palavra inteira (Word Boundary - Aumentado para 300)
         const wordRegex = new RegExp('\\b' + term + '\\b');
         if (wordRegex.test(titleNorm)) {
-          score += isCommonWord ? 15 : 80;
+          score += isCommonWord ? 15 : 300;
         }
 
         // Par de termos consecutivos na busca que aparecem contíguos na descrição
@@ -133,6 +139,13 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
           }
         }
       });
+
+      // Heurística de Prioridade Comercial BRF (Sadia e Perdigão)
+      const isBRF = brandNorm.includes('sadia') || brandNorm.includes('perdigao') || 
+                    titleNorm.includes('sadia') || titleNorm.includes('perdigao');
+      if (isBRF) {
+        score += 150;
+      }
 
       // Penalidade de comprimento do título (Length Penalty)
       // Favorece produtos com títulos mais curtos e diretos quando ocorrem empates
