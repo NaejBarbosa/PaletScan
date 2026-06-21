@@ -134,6 +134,10 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
         }
       });
 
+      // Penalidade de comprimento do título (Length Penalty)
+      // Favorece produtos com títulos mais curtos e diretos quando ocorrem empates
+      score += Math.max(0, 100 - titleNorm.length);
+
       return { prod, score };
     });
 
