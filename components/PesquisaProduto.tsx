@@ -76,10 +76,71 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
     const terms = removeAccents(searchTerm).split(/\s+/).filter(Boolean);
     if (terms.length === 0) return [];
 
-    return produtosValidos.filter((prod) => {
+    // 1. Filtra os produtos que possuem TODOS os termos pesquisados (Fuzzy Check)
+    const matches = produtosValidos.filter((prod) => {
       const matchText = removeAccents(`${prod.produtoDescr} ${prod.marcaDescr} ${prod.produtoEan} ${prod.produtoDun}`);
       return terms.every((term) => matchText.includes(term));
     });
+
+    // 2. Calcula a pontuação de relevância para ordenar os resultados
+    const scored = matches.map((prod) => {
+      const titleNorm = removeAccents(prod.produtoDescr || '');
+      const brandNorm = removeAccents(prod.marcaDescr || '');
+      const searchNorm = removeAccents(searchTerm);
+      const combinedNorm = `${brandNorm} ${titleNorm}`;
+
+      let score = 0;
+
+      // Correspondência exata da frase de busca inteira
+      if (titleNorm.includes(searchNorm)) {
+        score += 1000;
+      } else if (combinedNorm.includes(searchNorm)) {
+        score += 800;
+      }
+
+      // Correspondência de termos individuais
+      terms.forEach((term, idx) => {
+        const isCommonWord = term.length <= 2;
+        
+        // Match de Marca
+        if (brandNorm === term) {
+          score += isCommonWord ? 50 : 300;
+        } else if (brandNorm.includes(term)) {
+          score += isCommonWord ? 20 : 100;
+        }
+
+        // Match de Descrição (posição)
+        const pos = titleNorm.indexOf(term);
+        if (pos === 0) {
+          score += isCommonWord ? 30 : 200; // Começa com a palavra chave
+        } else if (pos > 0) {
+          // Pontua melhor os matches que ocorrem mais próximos ao início da descrição
+          score += isCommonWord ? 10 : Math.max(0, 100 - Math.floor(pos / 2));
+        }
+
+        // Match exato de palavra inteira (Word Boundary)
+        const wordRegex = new RegExp('\\b' + term + '\\b');
+        if (wordRegex.test(titleNorm)) {
+          score += isCommonWord ? 15 : 80;
+        }
+
+        // Par de termos consecutivos na busca que aparecem contíguos na descrição
+        if (idx < terms.length - 1) {
+          const nextTerm = terms[idx + 1];
+          const pair = `${term} ${nextTerm}`;
+          if (titleNorm.includes(pair)) {
+            score += 150;
+          }
+        }
+      });
+
+      return { prod, score };
+    });
+
+    // 3. Ordena de forma decrescente pelo score de relevância
+    scored.sort((a, b) => b.score - a.score);
+
+    return scored.map((item) => item.prod);
   }, [searchTerm, produtosValidos]);
 
   // 2. Lógica para Adicionar Produto na Watchlist (Radar)
