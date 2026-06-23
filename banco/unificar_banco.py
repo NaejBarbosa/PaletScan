@@ -130,9 +130,17 @@ def main():
             if not ean and not dun:
                 continue
                 
-            descr = clean_text(title or descr_fiscal)
-            # Formata em Title Case se for caixa alta
-            descr_fmt = format_title(descr)
+            # Prefere descr_fiscal pois ela contém o peso dos produtos da Lar, ao contrário do title
+            raw_descr = descr_fiscal if descr_fiscal else title
+            descr_limpa = clean_text(raw_descr)
+            # Remove " (pesar)" ou "(pesar)"
+            descr_limpa = re.sub(r'\s*\(\s*pesar\s*\)', '', descr_limpa, flags=re.IGNORECASE)
+            # Remove pontos de partição e informações de conservação redundantes
+            descr_limpa = re.sub(r'•\s*(congelado|congelada|resfriado|resfriada)', '', descr_limpa, flags=re.IGNORECASE)
+            descr_limpa = re.sub(r'[-\u2022]\s*(congelado|congelada|resfriado|resfriada)', '', descr_limpa, flags=re.IGNORECASE)
+            descr_limpa = " ".join(descr_limpa.split()).strip(" -•")
+            
+            descr_fmt = format_title(descr_limpa)
             classe_fmt = format_title(clean_text(classe))
             conservacao_fmt = format_title(clean_text(conservacao))
             

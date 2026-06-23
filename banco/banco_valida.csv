@@ -1,114 +1,114 @@
 marca-id;marca-descr;produto-classe;produto-ean;produto-dun;produto-conservacao;produto-descr
-1;Lar;Batatas;7896419730729;17896419730726;Congelado;Batata Palito Airfryer
-1;Lar;Pescados;7896419731917;17896419731914;Congelado;Filé de Tilápia
-1;Lar;Pescados;7896419731801;17896419731808;Congelado;Filé de Tilápia
-1;Lar;Pescados;7896419731900;17896419731907;Congelado;Filé de Tilápia
-1;Lar;Quentes;7896419720270;17896419720277;Congelado;Anéis de Cebola
-1;Lar;Quentes;7896419720287;17896419720284;Congelado;Anéis de Cebola
-1;Lar;Batatas;7896419730705;17896419730702;Congelado;Batata Palito
-1;Lar;Batatas;7896419730347;17896419730344;Congelado;Batata Palito
-1;Lar;Quentes;7896419724384;17896419724381;Congelado;Polenta Palito
-1;Lar;Quentes;7896419712770;17896419712777;Congelado;Polenta Palito
-1;Lar;Bandejas Congeladas;7896419728887;17896419728884;Congelado;Coração Bandeja • Congelada
-1;Lar;Bandejas Congeladas;7896419727286;17896419727283;Congelado;Coração Bandeja • Congelada
-1;Lar;Bandejas Congeladas;7896419728900;17896419728907;Congelado;Coxas e Sobrecoxas • Bandeja Congelada 1kg
-1;Lar;Bandejas Congeladas;7896419728894;17896419728891;Congelado;Coxinhas das Asas Bandeja • Congelada
-1;Lar;Bandejas Congeladas;7896419727309;17896419727306;Congelado;Coxinhas das Asas Bandeja • Congelada
-1;Lar;Bandejas Congeladas;7896419728870;17896419728877;Congelado;Filé de Peito Bandeja • Congelada
-1;Lar;Bandejas Congeladas;7896419727316;17896419727313;Congelado;Filé de Peito Bandeja • Congelada
-1;Lar;Bandejas Congeladas;7896419728917;17896419728914;Congelado;Filezinho Sassami Bandeja • Congelada
-1;Lar;Bandejas Congeladas;7896419727323;17896419727320;Congelado;Filezinho Sassami Bandeja • Congelada
-1;Lar;Bandejas Congeladas;7896419727279;17896419727276;Congelado;Moela Bandeja • Congelada
-1;Lar;Bandejas Resfriadas;7896419728078;17896419728075;Resfriado;Coração Bandeja • Resfriado
-1;Lar;Bandejas Resfriadas;7896419728047;17896419728044;Resfriado;Coxinhas das Asas Bandeja • Resfriada
-1;Lar;Bandejas Resfriadas;7896419728023;17896419728020;Resfriado;Filé de Peito Bandeja • Resfriado
-1;Lar;Bandejas Resfriadas;7896419728085;17896419728082;Resfriado;Filezinho Sassami Bandeja • Resfriada
-1;Lar;Bandejas Resfriadas;7896419727996;17896419727993;Resfriado;Meio das Asas Bandeja • Resfriada
-1;Lar;Bandejas Resfriadas;7896419728030;17896419728037;Resfriado;Moela Bandeja • Resfriada
-1;Lar;Bandejas Resfriadas;7896419728009;17896419728006;Resfriado;Sobrecoxas Bandeja • Resfriada
+1;Lar;Batatas;7896419730729;17896419730726;Congelado;Batata Palito Airfryer 1,005kg
+1;Lar;Pescados;7896419731917;17896419731914;Congelado;Filé de Tilápia 700g
+1;Lar;Pescados;7896419731801;17896419731808;Congelado;Filé de Tilápia 5kg
+1;Lar;Pescados;7896419731900;17896419731907;Congelado;Filé de Tilápia 400g
+1;Lar;Quentes;7896419720270;17896419720277;Congelado;Anéis de Cebola 1,1kg
+1;Lar;Quentes;7896419720287;17896419720284;Congelado;Anéis de Cebola 400g
+1;Lar;Batatas;7896419730705;17896419730702;Congelado;Batata Palito 1,5kg
+1;Lar;Batatas;7896419730347;17896419730344;Congelado;Batata Palito 700g
+1;Lar;Quentes;7896419724384;17896419724381;Congelado;Polenta Palito 1,1kg
+1;Lar;Quentes;7896419712770;17896419712777;Congelado;Polenta Palito 400g
+1;Lar;Bandejas Congeladas;7896419728887;17896419728884;Congelado;Coração Bandeja
+1;Lar;Bandejas Congeladas;7896419727286;17896419727283;Congelado;Coração Bandeja
+1;Lar;Bandejas Congeladas;7896419728900;17896419728907;Congelado;Coxas e Sobrecoxas • Bandeja 1kg
+1;Lar;Bandejas Congeladas;7896419728894;17896419728891;Congelado;Coxinhas das Asas Bandeja
+1;Lar;Bandejas Congeladas;7896419727309;17896419727306;Congelado;Coxinhas das Asas Bandeja
+1;Lar;Bandejas Congeladas;7896419728870;17896419728877;Congelado;Filé de Peito Bandeja
+1;Lar;Bandejas Congeladas;7896419727316;17896419727313;Congelado;Filé de Peito Bandeja
+1;Lar;Bandejas Congeladas;7896419728917;17896419728914;Congelado;Filezinho Sassami Bandeja
+1;Lar;Bandejas Congeladas;7896419727323;17896419727320;Congelado;Filezinho Sassami Bandeja
+1;Lar;Bandejas Congeladas;7896419727279;17896419727276;Congelado;Moela Bandeja
+1;Lar;Bandejas Resfriadas;7896419728078;17896419728075;Resfriado;Coração Bandeja
+1;Lar;Bandejas Resfriadas;7896419728047;17896419728044;Resfriado;Coxinhas das Asas Bandeja
+1;Lar;Bandejas Resfriadas;7896419728023;17896419728020;Resfriado;Filé de Peito Bandeja
+1;Lar;Bandejas Resfriadas;7896419728085;17896419728082;Resfriado;Filezinho Sassami Bandeja
+1;Lar;Bandejas Resfriadas;7896419727996;17896419727993;Resfriado;Meio das Asas Bandeja
+1;Lar;Bandejas Resfriadas;7896419728030;17896419728037;Resfriado;Moela Bandeja
+1;Lar;Bandejas Resfriadas;7896419728009;17896419728006;Resfriado;Sobrecoxas Bandeja
 1;Lar;Cozidos;7896419731177;17896419731174;Congelado;Frango Desfiado
 1;Lar;Cozidos;7896419728757;27896419728751;Congelado;Meio Peito Cozido em Cubos Linha Minuto 300g
 1;Lar;Cozidos;7896419728740;27896419728744;Congelado;Meio Peito Cozido em Tiras Linha Minuto 300g
 1;Lar;Cozidos;7896419728849;17896419728846;Congelado;Coxinha da Asa Assado Linha Minuto 300g
 1;Lar;Cozidos;7896419728818;17896419728815;Congelado;Meio da asa assada Linha Minuto 300g
 1;Lar;Cozidos;7896419728825;17896419728822;Congelado;Filezinho Sassami Assado Linha Minuto 300g
-1;Lar;Empanados;7896419714071;17896419714078;Congelado;Empanitos Empanado
-1;Lar;Empanados;7896419725336;17896419725333;Congelado;Empanitos Empanado
-1;Lar;Empanados;7896419725480;17896419725487;Congelado;Filé à milanesa
-1;Lar;Empanados;7896419717560;17896419717567;Congelado;Filé de Coxas e Sobrecoxas Empanadas
-1;Lar;Empanados;7896419725329;17896419725326;Congelado;Filé de Coxas e Sobrecoxas Empanadas
-1;Lar;Empanados;7896419715566;17896419715563;Congelado;Filezinho Sassami Empanado
-1;Lar;Empanados;7896419716129;17896419716126;Congelado;Filezinho Sassami Empanado
-1;Lar;Empanados;7896419730156;17896419730153;Congelado;Mini Hambúrguer Empanado de Frango
-1;Lar;Empanados;7896419725459;17896419725456;Congelado;Iscas Empanadas
-1;Lar;Empanados;7896419713852;17896419713859;Congelado;Steak Empanado
-1;Lar;Empanados;7896419729143;17896419729140;Congelado;Hambúrguer Empanado de Frango
-1;Lar;Envelopados Congelados;7896419721475;17896419721472;Congelado;Asas Envelopadas • Congeladas
-1;Lar;Envelopados Congelados;7896419720799;17896419721168;Congelado;Coxinhas das Asas Envelopadas • Congeladas
-1;Lar;Envelopados Congelados;7896419719977;17896419721175;Congelado;Coxas e Sobrecoxas Envelopadas • Congeladas
-1;Lar;Envelopados Congelados;7896419721536;17896419721533;Congelado;Filé de Coxas Sobrecoxas Envelopadas • Congeladas
-1;Lar;Envelopados Congelados;7896419720386;17896419721182;Congelado;Filé de Peito Envelopado • Congelado
-1;Lar;Envelopados Congelados;7896419720447;17896419721205;Congelado;Filezinho Sassami Envelopado • Congelado
-1;Lar;Envelopados Congelados;7896419720393;17896419720390;Congelado;Peito com Osso Envelopado • Congelado
-1;Lar;Envelopados Congelados;7896419720997;17896419721212;Congelado;Sambiquira Envelopada • Congelada
-1;Lar;Envelopados Congelados;7896419720676;17896419721267;Congelado;Sobrecoxas Envelopadas • Congeladas
-1;Lar;Envelopados Resfriados;7896419720959;17896419720956;Resfriado;Coxas e Sobrecoxas Envelopadas • Resfriadas
-1;Lar;Envelopados Resfriados;7896419723424;17896419723421;Resfriado;Sobrecoxas Envelopadas • Resfriadas
-1;Lar;Envelopados Resfriados;7896419723400;17896419723407;Resfriado;Coxas e Sobrecoxas sem Osso Envelopadas Resfriadas
-1;Lar;Envelopados Resfriados;7896419720973;17896419720970;Resfriado;Coxinhas das Asas Envelopadas • Resfriadas
-1;Lar;Envelopados Resfriados;7896419720966;17896419720963;Resfriado;Filé de Peito Envelopado • Resfriado
-1;Lar;Envelopados Resfriados;7896419720980;17896419720987;Resfriado;Peito com Osso Envelopado • Resfriado
-1;Lar;IQF;7896419714224;17896419714221;Congelado;Coxas IQF
+1;Lar;Empanados;7896419714071;17896419714078;Congelado;Empanitos Empanado 1,5kg
+1;Lar;Empanados;7896419725336;17896419725333;Congelado;Empanitos Empanado 700g
+1;Lar;Empanados;7896419725480;17896419725487;Congelado;Filé à milanesa 700g
+1;Lar;Empanados;7896419717560;17896419717567;Congelado;Filé de Coxas e Sobrecoxas Empanadas 1,5kg
+1;Lar;Empanados;7896419725329;17896419725326;Congelado;Filé de Coxas e Sobrecoxas Empanadas 700g
+1;Lar;Empanados;7896419715566;17896419715563;Congelado;Filezinho Sassami Empanado 1,5kg
+1;Lar;Empanados;7896419716129;17896419716126;Congelado;Filezinho Sassami Empanado 700g
+1;Lar;Empanados;7896419730156;17896419730153;Congelado;Mini Hambúrguer Empanado de Frango 300g
+1;Lar;Empanados;7896419725459;17896419725456;Congelado;Iscas Empanadas 700g
+1;Lar;Empanados;7896419713852;17896419713859;Congelado;Steak Empanado 100g
+1;Lar;Empanados;7896419729143;17896419729140;Congelado;Hambúrguer Empanado de Frango 100g
+1;Lar;Envelopados Congelados;7896419721475;17896419721472;Congelado;Asas Envelopadas
+1;Lar;Envelopados Congelados;7896419720799;17896419721168;Congelado;Coxinhas das Asas Envelopadas
+1;Lar;Envelopados Congelados;7896419719977;17896419721175;Congelado;Coxas e Sobrecoxas Envelopadas
+1;Lar;Envelopados Congelados;7896419721536;17896419721533;Congelado;Filé de Coxas Sobrecoxas Envelopadas
+1;Lar;Envelopados Congelados;7896419720386;17896419721182;Congelado;Filé de Peito Envelopado
+1;Lar;Envelopados Congelados;7896419720447;17896419721205;Congelado;Filezinho Sassami Envelopado
+1;Lar;Envelopados Congelados;7896419720393;17896419720390;Congelado;Peito com Osso Envelopado
+1;Lar;Envelopados Congelados;7896419720997;17896419721212;Congelado;Sambiquira Envelopada
+1;Lar;Envelopados Congelados;7896419720676;17896419721267;Congelado;Sobrecoxas Envelopadas
+1;Lar;Envelopados Resfriados;7896419720959;17896419720956;Resfriado;Coxas e Sobrecoxas Envelopadas
+1;Lar;Envelopados Resfriados;7896419723424;17896419723421;Resfriado;Sobrecoxas Envelopadas
+1;Lar;Envelopados Resfriados;7896419723400;17896419723407;Resfriado;Coxas e Sobrecoxas sem Osso Envelopadas
+1;Lar;Envelopados Resfriados;7896419720973;17896419720970;Resfriado;Coxinhas das Asas Envelopadas
+1;Lar;Envelopados Resfriados;7896419720966;17896419720963;Resfriado;Filé de Peito Envelopado
+1;Lar;Envelopados Resfriados;7896419720980;17896419720987;Resfriado;Peito com Osso Envelopado
+1;Lar;IQF;7896419714224;17896419714221;Congelado;Coxas IQF 1kg
 1;Lar;IQF;7896419727811;17896419727825;Congelado;Coxas IQF 700g
-1;Lar;IQF;7896419713784;17896419713781;Congelado;Coxinhas das Asas IQF
+1;Lar;IQF;7896419713784;17896419713781;Congelado;Coxinhas das Asas IQF 1kg
 1;Lar;IQF;7896419727774;17896419727771;Congelado;Coxinhas das Asas IQF 700g
-1;Lar;IQF;7896419716273;17896419716270;Congelado;Filé de Coxas e Sobrecoxas sem Osso com Pele IQF
-1;Lar;IQF;7896419727859;17896419727856;Congelado;Filé de Coxas e Sobrecoxas sem Osso com Pele IQF
-1;Lar;IQF;7896419727835;17896419727832;Congelado;Frango a Passarinho IQF
-1;Lar;IQF;7896419701637;17896419701634;Congelado;Frango a Passarinho IQF
-1;Lar;IQF;7896419716280;17896419716287;Congelado;Filé de Peito IQF
+1;Lar;IQF;7896419716273;17896419716270;Congelado;Filé de Coxas e Sobrecoxas sem Osso com Pele IQF 1kg
+1;Lar;IQF;7896419727859;17896419727856;Congelado;Filé de Coxas e Sobrecoxas sem Osso com Pele IQF 700g
+1;Lar;IQF;7896419727835;17896419727832;Congelado;Frango a Passarinho IQF 700g
+1;Lar;IQF;7896419701637;17896419701634;Congelado;Frango a Passarinho IQF 1kg
+1;Lar;IQF;7896419716280;17896419716287;Congelado;Filé de Peito IQF 1kg
 1;Lar;IQF;7896419727804;17896419727801;Congelado;Filé de Peito IQF 700g
-1;Lar;IQF;7896419714231;17896419714238;Congelado;Filezinho Sassami IQF
+1;Lar;IQF;7896419714231;17896419714238;Congelado;Filezinho Sassami IQF 1kg
 1;Lar;IQF;7896419727798;17896419727795;Congelado;Filezinho Sassami IQF 700g
-1;Lar;IQF;7896419715047;17896419715044;Congelado;Sobrecoxas IQF
+1;Lar;IQF;7896419715047;17896419715044;Congelado;Sobrecoxas IQF 1kg
 1;Lar;IQF;7896419727828;17896419727825;Congelado;Sobrecoxas IQF 700g
-1;Lar;IQF;7896419715092;17896419715099;Congelado;Meio das Asas IQF
+1;Lar;IQF;7896419715092;17896419715099;Congelado;Meio das Asas IQF 1kg
 1;Lar;Linguiças;7896419728863;17896419728860;Congelado;Filé de Peito Moído
-1;Lar;Linguiças;7896419722656;17896419722653;Congelado;Linguiça de Frango Fininha Congelada
-1;Lar;Linguiças;7896419728108;17896419728105;Congelado;Linguiça de Frango Fininha Congelada
-1;Lar;Linguiças;7896419728092;17896419728099;Resfriado;Linguiça de Frango Fininha Resfriada 700g
-1;Lar;Linguiças;7896419722274;17896419722271;Congelado;Linguiça de Frango Grossa Congelada
-1;Lar;Linguiças;7896419722663;17896419722660;Congelado;Linguiça de Frango Grossa Congelada
-1;Lar;Linguiças;7896419727439;17896419727436;Congelado;Linguiça de Frango Petisco Congelada
-1;Lar;Miúdos;7896419729211;17896419729218;Congelado;Fígado
-1;Lar;Vegetais;7896419724612;17896419724619;Congelado;Brócolis Congelado
-1;Lar;Vegetais;7896419724582;17896419724589;Congelado;Ervilhas Congeladas
-1;Lar;Vegetais;7896419724599;17896419724596;Congelado;Ervilhas Congeladas
-1;Lar;Vegetais;7896419724537;17896419724534;Congelado;Mix de Vegetais Congelado
-1;Lar;Vegetais;7896419724483;17896419724480;Congelado;Seleta de Legumes Congeladas
-1;Lar;Vegetais;7896419724490;17896419724497;Congelado;Seleta de Legumes Congeladas
-1;Lar;Empanados;7896419714064;17896419714061;Congelado;Tirinhas Empanadas
+1;Lar;Linguiças;7896419722656;17896419722653;Congelado;Linguiça de Frango Fininha 1kg
+1;Lar;Linguiças;7896419728108;17896419728105;Congelado;Linguiça de Frango Fininha 700g
+1;Lar;Linguiças;7896419728092;17896419728099;Resfriado;Linguiça de Frango Fininha 700g
+1;Lar;Linguiças;7896419722274;17896419722271;Congelado;Linguiça de Frango Grossa 5kg
+1;Lar;Linguiças;7896419722663;17896419722660;Congelado;Linguiça de Frango Grossa 1kg
+1;Lar;Linguiças;7896419727439;17896419727436;Congelado;Linguiça de Frango Petisco 700g
+1;Lar;Miúdos;7896419729211;17896419729218;Congelado;Fígado 700g
+1;Lar;Vegetais;7896419724612;17896419724619;Congelado;Brócolis 300g
+1;Lar;Vegetais;7896419724582;17896419724589;Congelado;Ervilhas 1,1kg
+1;Lar;Vegetais;7896419724599;17896419724596;Congelado;Ervilhas 300g
+1;Lar;Vegetais;7896419724537;17896419724534;Congelado;Mix de Vegetais 300g
+1;Lar;Vegetais;7896419724483;17896419724480;Congelado;Seleta de Legumes 1,1kg
+1;Lar;Vegetais;7896419724490;17896419724497;Congelado;Seleta de Legumes 300g
+1;Lar;Empanados;7896419714064;17896419714061;Congelado;Tirinhas Empanadas 1,5kg
 1;Lar;Cozidos;7896419731160;7896419731167;Congelado;Frango Desfiado
-1;Lar;IQF Temperados;7896419730194;17896419730191;Congelado;Coxinha da Asa Temperadas IQF
-1;Lar;IQF Temperados;7896419730774;17896419730771;Congelado;Filé de Coxas e Sobrecoxas Temperada IQF
-1;Lar;IQF Temperados;7896419730200;17896419730207;Congelado;Frango a Passarinho Temperado IQF
-1;Lar;Linguiças;7896419728115;17896419728112;Congelado;Linguiça de Frango Grossa Congelada
-1;Lar;Miúdos;7896419729198;178964195729195;Congelado;Coração
-1;Lar;Miúdos;7896419729204;17896419729201;Congelado;Moela
-1;Lar;Temperados;7896419730224;17896419730221;Congelado;Frango Inteiro Temperado Congelado
-1;Lar;Vegetais;7896419720010;17896419720017;Congelado;Brócolis Congelado
-1;Lar;Vegetais;7896419720003;17896419720000;Congelado;Couve-Flor Congelado
-1;Lar;Temperados;7896419730842;17896419720146;Congelado;Ave Natalina Temperada Recheada Congelada
-1;Lar;Empanados;7896419725343;17896419725340;Congelado;Tirinhas Empanadas
-1;Lar;Envelopados Congelados;7896419721116;17896419721113;Congelado;Coxas e Sobrecoxas com Porção Dorsal Envelopadas • Congeladas
-1;Lar;Envelopados Congelados;7896419723233;17896419723230;Congelado;Coxas e Sobrecoxas sem osso sem pele Envelopadas • Congeladas
-1;Lar;IQF Temperados;7896419730187;17896419730184;Congelado;Meio da Asas Temperadas IQF
-1;Lar;IQF Temperados;7896419730767;17896419730764;Congelado;Sobrecoxa Temperada IQF
-1;Lar;IQF Temperados;7896419730217;17896419730214;Congelado;Filezinho Sassami Temperado IQF
-1;Lar;Temperados;7896419729181;17896419729188;Congelado;Coração Temperado
-1;Lar;Temperados;7896419728955;17896419728952;Congelado;Coxinhas das Asas Temperadas
-1;Lar;Temperados;7896419728948;17896419728945;Congelado;Meio das Asas Temperadas
-1;Lar;Temperados;7896419728931;17896419728938;Congelado;Frango a Passarinho Temperado
+1;Lar;IQF Temperados;7896419730194;17896419730191;Congelado;Coxinha da Asa Temperadas IQF 700g
+1;Lar;IQF Temperados;7896419730774;17896419730771;Congelado;Filé de Coxas e Sobrecoxas Temperada IQF 700g
+1;Lar;IQF Temperados;7896419730200;17896419730207;Congelado;Frango a Passarinho Temperado IQF 700g
+1;Lar;Linguiças;7896419728115;17896419728112;Congelado;Linguiça de Frango Grossa 700g
+1;Lar;Miúdos;7896419729198;178964195729195;Congelado;Coração 700g
+1;Lar;Miúdos;7896419729204;17896419729201;Congelado;Moela 700g
+1;Lar;Temperados;7896419730224;17896419730221;Congelado;Frango Inteiro Temperado 2,4kg – 2,8kg
+1;Lar;Vegetais;7896419720010;17896419720017;Congelado;Brócolis 1,1kg
+1;Lar;Vegetais;7896419720003;17896419720000;Congelado;Couve-Flor 1,1kg
+1;Lar;Temperados;7896419730842;17896419720146;Congelado;Ave Natalina Temperada Recheada 3,4 – 3,8kg
+1;Lar;Empanados;7896419725343;17896419725340;Congelado;Tirinhas Empanadas 700g
+1;Lar;Envelopados Congelados;7896419721116;17896419721113;Congelado;Coxas e Sobrecoxas com Porção Dorsal Envelopadas
+1;Lar;Envelopados Congelados;7896419723233;17896419723230;Congelado;Coxas e Sobrecoxas sem osso sem pele Envelopadas
+1;Lar;IQF Temperados;7896419730187;17896419730184;Congelado;Meio da Asas Temperadas IQF 700g
+1;Lar;IQF Temperados;7896419730767;17896419730764;Congelado;Sobrecoxa Temperada IQF 700g
+1;Lar;IQF Temperados;7896419730217;17896419730214;Congelado;Filezinho Sassami Temperado IQF 700g
+1;Lar;Temperados;7896419729181;17896419729188;Congelado;Coração Temperado 700g
+1;Lar;Temperados;7896419728955;17896419728952;Congelado;Coxinhas das Asas Temperadas 700g
+1;Lar;Temperados;7896419728948;17896419728945;Congelado;Meio das Asas Temperadas 700g
+1;Lar;Temperados;7896419728931;17896419728938;Congelado;Frango a Passarinho Temperado 700g
 3;BRF - Sadia;Aves;7891515527617;;Congelado;Hambúrguer de Frango Empanado Sadia 900g -Caixa c/4
 4;BRF - Perdigão;Suínos;7891515526511;;Resfriado;Embutido de Pernil Cozido Perdigão Food Service 3,4Kg -Caixa c/2
 3;BRF - Sadia;Suínos;7891515525729;;Resfriado;Linguiça Paio Defumada Sadia 370g -Caixa c/24
