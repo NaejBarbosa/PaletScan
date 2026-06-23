@@ -9,6 +9,9 @@ interface ProdutoAvatarProps {
 export default function ProdutoAvatar({ ean, descricao }: ProdutoAvatarProps) {
   const [hasError, setHasError] = useState(false);
 
+  // Normaliza o EAN para ter exatamente 13 dígitos, preservando/adicionando zeros à esquerda
+  const normalizedEan = ean ? ean.trim().padStart(13, '0') : '';
+
   // Reseta o estado de erro caso o EAN mude para que outros produtos carreguem corretamente
   useEffect(() => {
     setHasError(false);
@@ -22,7 +25,7 @@ export default function ProdutoAvatar({ ean, descricao }: ProdutoAvatarProps) {
         </div>
       ) : (
         <img
-          src={`/imagens_produtos/${ean}.webp`}
+          src={`/imagens_produtos/${normalizedEan}.webp`}
           alt={descricao}
           onError={() => setHasError(true)}
           className="h-48 w-full object-contain select-none animate-fade-in"
