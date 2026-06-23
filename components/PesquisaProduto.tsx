@@ -67,6 +67,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
 
   // Estados para o Modal de Detalhes
   const [selectedProduct, setSelectedProduct] = useState<ProdutoValido | null>(null);
+  const [selectedProductValidade, setSelectedProductValidade] = useState<string | null>(null);
   const [isWatchlistMatch, setIsWatchlistMatch] = useState(false);
   const [isMatchCelebration, setIsMatchCelebration] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
@@ -116,6 +117,42 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
     }
   }, [selectedProduct, isMatchCelebration]);
 
+  useEffect(() => {
+    if (!selectedProduct) {
+      setSelectedProductValidade(null);
+    }
+  }, [selectedProduct]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const term = searchTerm.trim();
+      if (!term) return;
+
+      const dadosExtraidos = extrairDados(term);
+      if (dadosExtraidos) {
+        const { ean, dun, validade } = dadosExtraidos;
+        const prod = produtosValidos.find(
+          (p) => (dun && p.produtoDun === dun) || (ean && p.produtoEan === ean)
+        );
+        if (prod) {
+          setIsWatchlistMatch(watchlist.some((w) => w.produtoEan === prod.produtoEan));
+          setIsMatchCelebration(false);
+          if (dun && validade) {
+            setSelectedProductValidade(validade);
+          } else {
+            setSelectedProductValidade(null);
+          }
+          setSelectedProduct(prod);
+          setShowQRCode(false);
+          showToast('Produto identificado via código!', 'success');
+        } else {
+          showToast(`Código ${dun || ean} não identificado no cadastro.`, 'error');
+        }
+      }
+    }
+  };
+
   const saveWatchlist = (list: WatchlistItem[]) => {
     setWatchlist(list);
     localStorage.setItem('radar_watchlist', JSON.stringify(list));
@@ -145,9 +182,22 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
   };
 
   const filteredProducts = useMemo(() => {
-    if (!debouncedSearchTerm.trim() || debouncedSearchTerm.trim().length < 2) return [];
+    const cleanTerm = debouncedSearchTerm.trim();
+    if (!cleanTerm || cleanTerm.length < 2) return [];
+
+    // Tenta validar com Regex (Data Matrix, GS1 bruto, etc.)
+    const dadosExtraidos = extrairDados(cleanTerm);
+    if (dadosExtraidos) {
+      const { ean, dun } = dadosExtraidos;
+      const prod = produtosValidos.find(
+        (p) => (dun && p.produtoDun === dun) || (ean && p.produtoEan === ean)
+      );
+      if (prod) {
+        return [prod];
+      }
+    }
     
-    const termNorm = removeAccents(debouncedSearchTerm);
+    const termNorm = removeAccents(cleanTerm);
     
     // Monta a string de busca de forma análoga ao app.py (Marca + Descrição + Classe)
     const textsNorm = produtosValidos.map((prod) => 
@@ -184,12 +234,26 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
 
   const handleAddManualEan = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanEan = novoEanProcurado.trim();
-    if (!cleanEan) return;
+    const text = novoEanProcurado.trim();
+    if (!text) return;
+
+    // Aplica a validação de Regex do Registrar Entrada
+    const dados = extrairDados(text);
+    
+    const eanProcurado = dados?.ean || (text.length === 13 ? text : undefined);
+    const dunProcurado = dados?.dun || (text.length === 14 ? text : undefined);
+    
+    if (!dados && text.length !== 13 && text.length !== 14 && text.length !== 8) {
+      showToast('Código de barras ou Data Matrix inválido.', 'error');
+      return;
+    }
 
     // Busca o produto correspondente na base
     const product = produtosValidos.find(
-      (p) => p.produtoEan === cleanEan || p.produtoDun === cleanEan
+      (p) => 
+        (dunProcurado && p.produtoDun === dunProcurado) || 
+        (eanProcurado && p.produtoEan === eanProcurado) ||
+        (p.produtoEan === text || p.produtoDun === text)
     );
 
     if (!product) {
@@ -217,7 +281,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
       return;
     }
 
-    const { ean, dun } = dados;
+    const { ean, dun, validade } = dados;
     let foundProduct: ProdutoValido | undefined;
 
     if (dun) {
@@ -238,6 +302,13 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
     
     setIsWatchlistMatch(isMatch);
     setIsMatchCelebration(!!isPendingMatch);
+
+    if (dun && validade) {
+      setSelectedProductValidade(validade);
+    } else {
+      setSelectedProductValidade(null);
+    }
+
     setSelectedProduct(foundProduct);
     setShowQRCode(false);
 
@@ -430,6 +501,7 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
               placeholder="Pesquise por marca, produto, EAN ou DUN (ex: sobrecoxa bandeja sadia)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="input-field pl-11"
             />
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -461,6 +533,14 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
                   onClick={() => {
                     setIsWatchlistMatch(watchlist.some((w) => w.produtoEan === prod.produtoEan));
                     setIsMatchCelebration(false);
+                    
+                    const dadosExtraidos = extrairDados(debouncedSearchTerm.trim());
+                    if (dadosExtraidos && dadosExtraidos.validade && (dadosExtraidos.dun === prod.produtoDun || dadosExtraidos.ean === prod.produtoEan)) {
+                      setSelectedProductValidade(dadosExtraidos.validade);
+                    } else {
+                      setSelectedProductValidade(null);
+                    }
+                    
                     setSelectedProduct(prod);
                     setShowQRCode(false);
                   }}
@@ -566,6 +646,14 @@ export default function PesquisaProduto({ produtosValidos }: PesquisaProdutoProp
                   <div className="flex justify-between items-start gap-4 text-xs">
                     <span className="font-medium text-slate-500 dark:text-slate-400">DUN (Distribuição)</span>
                     <span className="font-mono text-slate-900 dark:text-slate-100 text-right font-semibold">{selectedProduct.produtoDun}</span>
+                  </div>
+                )}
+                {selectedProductValidade && (
+                  <div className="flex justify-between items-start gap-4 text-xs border-t border-dashed border-slate-200 dark:border-slate-700 pt-3 mt-2">
+                    <span className="font-semibold text-danger-600 dark:text-danger-400">Data de Vencimento</span>
+                    <span className="font-mono text-danger-700 dark:text-danger-400 text-right font-bold bg-danger-50 dark:bg-danger-950/30 px-2 py-0.5 rounded border border-danger-100 dark:border-danger-900/50">
+                      {selectedProductValidade}
+                    </span>
                   </div>
                 )}
               </div>
