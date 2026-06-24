@@ -22,6 +22,7 @@ interface ProdutoValido {
 interface CadastroProdutoModalProps {
   initialEan?: string;
   initialDun?: string;
+  initialProdutoParaVincular?: ProdutoValido;
   produtosValidos: ProdutoValido[];
   onClose: () => void;
   onSuccess: (novoProduto: ProdutoValido) => void;
@@ -126,26 +127,28 @@ function SearchableSelect({
 export default function CadastroProdutoModal({
   initialEan = '',
   initialDun = '',
+  initialProdutoParaVincular,
   produtosValidos,
   onClose,
   onSuccess
 }: CadastroProdutoModalProps) {
-  const [eanInput, setEanInput] = useState(initialEan);
+  const [eanInput, setEanInput] = useState(initialProdutoParaVincular ? initialProdutoParaVincular.produtoEan : initialEan);
   const [dunInput, setDunInput] = useState(initialDun);
-  const [marcaId, setMarcaId] = useState('');
-  const [marcaDescr, setMarcaDescr] = useState('');
-  const [produtoClasse, setProdutoClasse] = useState('');
-  const [produtoConservacao, setProdutoConservacao] = useState('');
-  const [produtoDescr, setProdutoDescr] = useState('');
+  const [marcaId, setMarcaId] = useState(initialProdutoParaVincular ? initialProdutoParaVincular.marcaId : '');
+  const [marcaDescr, setMarcaDescr] = useState(initialProdutoParaVincular ? initialProdutoParaVincular.marcaDescr : '');
+  const [produtoClasse, setProdutoClasse] = useState(initialProdutoParaVincular ? initialProdutoParaVincular.produtoClasse : '');
+  const [produtoConservacao, setProdutoConservacao] = useState(initialProdutoParaVincular ? initialProdutoParaVincular.produtoConservacao : '');
+  const [produtoDescr, setProdutoDescr] = useState(initialProdutoParaVincular ? initialProdutoParaVincular.produtoDescr : '');
 
   const [marcas, setMarcas] = useState<Brand[]>([]);
   const [activeScanField, setActiveScanField] = useState<'ean' | 'dun' | null>(null);
+  const [scanType, setScanType] = useState<'camera' | 'gallery' | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Estados para Vinculação de DUN
-  const [vincularDun, setVincularDun] = useState(!!initialDun);
-  const [produtoSelecionado, setProdutoSelecionado] = useState<ProdutoValido | null>(null);
+  const [vincularDun, setVincularDun] = useState(!!initialDun || !!initialProdutoParaVincular);
+  const [produtoSelecionado, setProdutoSelecionado] = useState<ProdutoValido | null>(initialProdutoParaVincular || null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const searchResultsRef = useRef<HTMLDivElement>(null);
@@ -397,28 +400,7 @@ export default function CadastroProdutoModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm overflow-y-auto p-4">
-      {activeScanField ? (
-        <div className="fixed inset-0 z-[110] bg-black flex flex-col justify-between">
-          <div className="bg-slate-900/80 backdrop-blur-md px-6 py-4 flex justify-between items-center z-10">
-            <h3 className="text-white text-lg font-semibold flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-              </svg>
-              Escaneando {activeScanField.toUpperCase()}
-            </h3>
-            <button
-              onClick={() => setActiveScanField(null)}
-              className="px-4 py-2 bg-danger-600 hover:bg-danger-700 text-white rounded-xl text-sm font-semibold transition-colors"
-            >
-              Cancelar Scanner
-            </button>
-          </div>
-          <div className="flex-1 relative">
-            <Scanner onDetected={handleScanDetected} />
-          </div>
-        </div>
-      ) : (
-        <div className="relative z-10 w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-scale-in my-8">
+      <div className="relative z-10 w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-scale-in my-8">
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex flex-col items-center text-center">
             <div className="w-10 h-10 rounded-xl bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center mb-2.5 shadow-sm">
@@ -461,16 +443,35 @@ export default function CadastroProdutoModal({
                     className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:text-slate-500 border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:border-primary-500 transition-all text-sm text-slate-900 dark:text-slate-100"
                   />
                   {!isEanFixed && !vincularDun && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveScanField('ean')}
-                      className="px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl transition-colors"
-                      title="Escanear EAN"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                      </svg>
-                    </button>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveScanField('ean');
+                          setScanType('camera');
+                        }}
+                        className="px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl transition-colors flex items-center justify-center"
+                        title="Escanear EAN por Câmera"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveScanField('ean');
+                          setScanType('gallery');
+                        }}
+                        className="px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl transition-colors flex items-center justify-center"
+                        title="Carregar EAN da Galeria"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -490,16 +491,35 @@ export default function CadastroProdutoModal({
                     className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:text-slate-500 border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:border-primary-500 transition-all text-sm text-slate-900 dark:text-slate-100"
                   />
                   {!isDunFixed && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveScanField('dun')}
-                      className="px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl transition-colors"
-                      title="Escanear DUN"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                      </svg>
-                    </button>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveScanField('dun');
+                          setScanType('camera');
+                        }}
+                        className="px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl transition-colors flex items-center justify-center"
+                        title="Escanear DUN por Câmera"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveScanField('dun');
+                          setScanType('gallery');
+                        }}
+                        className="px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl transition-colors flex items-center justify-center"
+                        title="Carregar DUN da Galeria"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -727,7 +747,18 @@ export default function CadastroProdutoModal({
               )}
             </button>
           </div>
-        </div>
+      </div>
+
+      {activeScanField && (
+        <Scanner
+          onDetected={handleScanDetected}
+          autoStartCamera={scanType === 'camera'}
+          autoStartGallery={scanType === 'gallery'}
+          onClose={() => {
+            setActiveScanField(null);
+            setScanType(null);
+          }}
+        />
       )}
     </div>
   );

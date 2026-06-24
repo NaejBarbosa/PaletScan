@@ -11,6 +11,7 @@ interface DetalheProdutoModalProps {
   watchlist: WatchlistItem[];
   toggleWatchlist: (produto: ProdutoValido) => void;
   onClose: () => void;
+  onVincularDun?: (produto: ProdutoValido) => void;
 }
 
 export default function DetalheProdutoModal({
@@ -20,6 +21,7 @@ export default function DetalheProdutoModal({
   watchlist,
   toggleWatchlist,
   onClose,
+  onVincularDun,
 }: DetalheProdutoModalProps) {
   const [mounted, setMounted] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
@@ -165,6 +167,18 @@ export default function DetalheProdutoModal({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Voltar para os Detalhes
+            </button>
+          )}
+
+          {!produto.produtoDun && onVincularDun && (
+            <button
+              onClick={() => onVincularDun(produto)}
+              className="w-full py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border bg-primary-600 hover:bg-primary-700 text-white border-primary-700 dark:bg-primary-700 dark:hover:bg-primary-800 transition-all shadow-md"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              Vincular DUN
             </button>
           )}
 

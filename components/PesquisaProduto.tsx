@@ -40,6 +40,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     ean: string;
     dun: string;
     adicionarWatchlist?: boolean;
+    produtoParaVincular?: ProdutoValido;
   } | null>(null);
 
   const handleCadastroProdutoSuccess = (novoProduto: ProdutoValido) => {
@@ -617,6 +618,14 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
           watchlist={watchlist}
           toggleWatchlist={toggleWatchlist}
           onClose={() => setSelectedProduct(null)}
+          onVincularDun={(prod) => {
+            setSelectedProduct(null);
+            setCadastroNaoIdentificado({
+              ean: prod.produtoEan,
+              dun: '',
+              produtoParaVincular: prod
+            });
+          }}
         />
       )}
 
@@ -625,6 +634,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
         <CadastroProdutoModal
           initialEan={cadastroNaoIdentificado.ean}
           initialDun={cadastroNaoIdentificado.dun}
+          initialProdutoParaVincular={cadastroNaoIdentificado.produtoParaVincular}
           produtosValidos={produtosValidos}
           onClose={() => setCadastroNaoIdentificado(null)}
           onSuccess={handleCadastroProdutoSuccess}
