@@ -152,6 +152,8 @@ export default function CadastroProdutoModal({
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const searchResultsRef = useRef<HTMLDivElement>(null);
+  const [showEanMenu, setShowEanMenu] = useState(false);
+  const eanMenuRef = useRef<HTMLDivElement>(null);
 
   // Efeito de debounce para a busca avançada
   useEffect(() => {
@@ -170,6 +172,17 @@ export default function CadastroProdutoModal({
     }, 0);
     return () => clearTimeout(timer);
   }, [debouncedSearchTerm]);
+
+  // Fecha o menu de QR Code ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (eanMenuRef.current && !eanMenuRef.current.contains(event.target as Node)) {
+        setShowEanMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Função auxiliar para normalizar string
   const removeAccents = (text: string): string => {
@@ -275,15 +288,34 @@ export default function CadastroProdutoModal({
         setActiveScanField(null);
         return;
       }
-      // Valida se EAN já existe na base
-      const jaExiste = produtosValidos.some(p => p.produtoEan === ean);
-      if (jaExiste) {
-        setErrorMsg(`O EAN ${ean} já está cadastrado na base.`);
-        setActiveScanField(null);
-        return;
+
+      if (vincularDun) {
+        // Fluxo de Vinculação: o produto DEVE existir na base e NÃO ter DUN cadastrado
+        const produtoExistente = produtosValidos.find(p => p.produtoEan === ean);
+        if (!produtoExistente) {
+          setErrorMsg(`O EAN ${ean} não foi encontrado na base de produtos.`);
+          setActiveScanField(null);
+          return;
+        }
+        if (produtoExistente.produtoDun) {
+          setErrorMsg(`O produto correspondente ao EAN ${ean} já possui o DUN ${produtoExistente.produtoDun} vinculado.`);
+          setActiveScanField(null);
+          return;
+        }
+        // Se existir e não tiver DUN, seleciona e carrega no modal
+        handleSelecionarProduto(produtoExistente);
+        setErrorMsg(null);
+      } else {
+        // Fluxo de Cadastro Manual Novo: o EAN NÃO deve existir na base
+        const jaExiste = produtosValidos.some(p => p.produtoEan === ean);
+        if (jaExiste) {
+          setErrorMsg(`O EAN ${ean} já está cadastrado na base.`);
+          setActiveScanField(null);
+          return;
+        }
+        setEanInput(ean);
+        setErrorMsg(null);
       }
-      setEanInput(ean);
-      setErrorMsg(null);
     } else if (activeScanField === 'dun') {
       if (!dun) {
         setErrorMsg('Nenhum DUN válido foi detectado neste código.');
@@ -471,6 +503,53 @@ export default function CadastroProdutoModal({
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </button>
+                    </div>
+                  )}
+                  {vincularDun && !produtoSelecionado && (
+                    <div className="relative" ref={eanMenuRef}>
+                      <button
+                        type="button"
+                        onClick={() => setShowEanMenu(!showEanMenu)}
+                        className="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl transition-all flex items-center justify-center shadow-sm"
+                        title="Escanear EAN (QR Code)"
+                      >
+                        <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                        </svg>
+                      </button>
+                      
+                      {showEanMenu && (
+                        <div className="absolute right-0 mt-1.5 z-50 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-1 min-w-[150px] flex flex-col gap-0.5 animate-scale-in">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowEanMenu(false);
+                              setActiveScanField('ean');
+                              setScanType('camera');
+                            }}
+                            className="w-full px-3 py-2 text-left text-xs font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/30 text-slate-700 dark:text-slate-300 rounded-lg flex items-center gap-2 transition-colors"
+                          >
+                            <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                            </svg>
+                            Usar Câmera
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowEanMenu(false);
+                              setActiveScanField('ean');
+                              setScanType('gallery');
+                            }}
+                            className="w-full px-3 py-2 text-left text-xs font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/30 text-slate-700 dark:text-slate-300 rounded-lg flex items-center gap-2 transition-colors"
+                          >
+                            <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Buscar Galeria
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
