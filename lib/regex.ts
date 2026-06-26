@@ -141,38 +141,42 @@ function extrairDadosGS1Bruto(qrData: string) {
   
   console.log('[GS1Bruto] String limpa para busca:', JSON.stringify(clean));
   
-  const regex = /01(\d{14}).*?(17|15)(\d{6})/;
-  const match = clean.match(regex);
-
-  if (!match) {
-    console.log('[GS1Bruto] Regex /01(\\d{14}).*?(17|15)(\\d{6})/ não encontrou correspondência.');
+  // 1. Busca independente do DUN: /01(\d{14})/
+  const matchDun = clean.match(/01(\d{14})/);
+  if (!matchDun) {
+    console.log('[GS1Bruto] DUN (01) não encontrado na string.');
     return null;
   }
+  const dun14 = matchDun[1];
+  console.log('[GS1Bruto] DUN encontrado:', dun14);
 
-  console.log('[GS1Bruto] Regex match obtido:', match[0]);
-  console.log('[GS1Bruto] Grupo 1 (DUN/GTIN):', match[1]);
-  console.log('[GS1Bruto] Grupo 2 (Identificador de Validade):', match[2]);
-  console.log('[GS1Bruto] Grupo 3 (Validade YYMMDD):', match[3]);
+  // 2. Busca independente da data: /(?:17|15)(\d{6})/
+  const matchValidade = clean.match(/(?:17|15)(\d{6})/);
+  let validadeFormatada: string | null = null;
 
-  const dun14 = match[1];
-  const validadeStr = match[3]; // YYMMDD
+  if (matchValidade) {
+    const validadeStr = matchValidade[1]; // YYMMDD
+    console.log('[GS1Bruto] Validade bruta encontrada:', validadeStr);
 
-  const yy = parseInt(validadeStr.substring(0, 2), 10);
-  const mm = parseInt(validadeStr.substring(2, 4), 10);
-  const dd = parseInt(validadeStr.substring(4, 6), 10);
+    const yy = parseInt(validadeStr.substring(0, 2), 10);
+    const mm = parseInt(validadeStr.substring(2, 4), 10);
+    const dd = parseInt(validadeStr.substring(4, 6), 10);
 
-  const ano = 2000 + yy;
-  const mes = mm;
-  const dia = dd;
+    const ano = 2000 + yy;
+    const mes = mm;
+    const dia = dd;
 
-  console.log(`[GS1Bruto] Componentes da data convertida -> Dia: ${dia}, Mês: ${mes}, Ano: ${ano}`);
+    console.log(`[GS1Bruto] Componentes da data convertida -> Dia: ${dia}, Mês: ${mes}, Ano: ${ano}`);
 
-  if (!isValidDate(ano, mes, dia)) {
-    console.log('[GS1Bruto] Data inválida detectada por isValidDate:', `${dia}/${mes}/${ano}`);
-    return null;
+    if (isValidDate(ano, mes, dia)) {
+      validadeFormatada = `${dia.toString().padStart(2, '0')}/${mes.toString().padStart(2, '0')}/${ano}`;
+    } else {
+      console.log('[GS1Bruto] Data inválida detectada por isValidDate:', `${dia}/${mes}/${ano}`);
+    }
+  } else {
+    console.log('[GS1Bruto] Identificador de validade (17 ou 15) não encontrado.');
   }
 
-  const validadeFormatada = `${dia.toString().padStart(2, '0')}/${mes.toString().padStart(2, '0')}/${ano}`;
   console.log('[GS1Bruto] Sucesso! Dados extraídos:', { dun: dun14, ean: undefined, validade: validadeFormatada });
 
   return {
