@@ -35,6 +35,28 @@ interface ItemRegistrado {
   dataRegistro: Date;
 }
 
+const obterProdutoPorCodigo = (ean: string | undefined, dun: string | undefined, base: ProdutoValido[]): ProdutoValido | undefined => {
+  if (dun) {
+    let prod = base.find((p) => p.produtoDun === dun);
+    if (prod) return prod;
+    // Derivação matemática de EAN a partir de DUN
+    const ean12 = dun.substring(1, 13);
+    let soma = 0;
+    for (let i = 0; i < ean12.length; i++) {
+      const val = parseInt(ean12[i], 10);
+      soma += val * (i % 2 === 0 ? 1 : 3);
+    }
+    const resto = soma % 10;
+    const dv = ((10 - resto) % 10).toString();
+    const eanDerivado = ean12 + dv;
+    return base.find((p) => p.produtoEan === eanDerivado);
+  }
+  if (ean) {
+    return base.find((p) => p.produtoEan === ean);
+  }
+  return undefined;
+};
+
 function HomeContent() {
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<'menu' | 'scan' | 'relatorio' | 'pesquisa'>('menu');
@@ -284,38 +306,22 @@ function HomeContent() {
     let { ean, dun, validade, tipo } = dados;
 
     // ========== CORREÇÃO: Sempre usar os dados da base quando disponíveis ==========
-    let produtoEncontrado: ProdutoValido | undefined = undefined;
+    const produtoEncontrado = obterProdutoPorCodigo(ean, dun, safeBase);
 
-    // 1) Se temos DUN (do código), busca o produto pelo DUN
-    if (dun) {
-      produtoEncontrado = safeBase.find((p) => p.produtoDun === dun);
-      if (!produtoEncontrado) {
-        showToast(`DUN ${dun} não identificado na base. Abrindo cadastro...`, 'info');
-        // Como o EAN não é auto-derivado, eanInicial será '' (vazio) para permitir escanear/digitar
-        const eanInicial = ean || '';
-        setCadastroNaoIdentificado({ ean: eanInicial, dun, validadeTemp: validade || '' });
-        return;
-      }
-      // ✅ Usa o EAN cadastrado na base
-      ean = produtoEncontrado.produtoEan;
-    }
-    // 2) Senão, busca pelo EAN (caso o código seja só EAN)
-    else if (ean) {
-      produtoEncontrado = safeBase.find((p) => p.produtoEan === ean);
-      if (!produtoEncontrado) {
-        showToast(`EAN ${ean} não identificado na base. Abrindo cadastro...`, 'info');
-        setCadastroNaoIdentificado({ ean, dun: dun || '', validadeTemp: validade || '' });
-        return;
-      }
-      // ✅ Busca o DUN correspondente na base (se existir)
-      if (produtoEncontrado.produtoDun) {
-        dun = produtoEncontrado.produtoDun;
-      }
-    }
-    // 3) Caso não tenha nem DUN nem EAN reconhecido (fallback)
-    else {
-      showToast('Código não possui DUN ou EAN válido.', 'error');
+    if (!produtoEncontrado) {
+      showToast(`Código ${dun || ean} não identificado na base. Abrindo cadastro...`, 'info');
+      setCadastroNaoIdentificado({
+        ean: ean || '',
+        dun: dun || '',
+        validadeTemp: validade || ''
+      });
       return;
+    }
+
+    // ✅ Resolve o EAN e o DUN a partir da base e do código
+    ean = produtoEncontrado.produtoEan;
+    if (produtoEncontrado.produtoDun) {
+      dun = produtoEncontrado.produtoDun;
     }
     // ========== FIM DA CORREÇÃO ==========
 

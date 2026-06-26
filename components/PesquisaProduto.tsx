@@ -23,6 +23,28 @@ export interface WatchlistItem extends ProdutoValido {
   localizado?: boolean;
 }
 
+const obterProdutoPorCodigo = (ean: string | undefined, dun: string | undefined, base: ProdutoValido[]): ProdutoValido | undefined => {
+  if (dun) {
+    let prod = base.find((p) => p.produtoDun === dun);
+    if (prod) return prod;
+    // Derivação matemática de EAN a partir de DUN
+    const ean12 = dun.substring(1, 13);
+    let soma = 0;
+    for (let i = 0; i < ean12.length; i++) {
+      const val = parseInt(ean12[i], 10);
+      soma += val * (i % 2 === 0 ? 1 : 3);
+    }
+    const resto = soma % 10;
+    const dv = ((10 - resto) % 10).toString();
+    const eanDerivado = ean12 + dv;
+    return base.find((p) => p.produtoEan === eanDerivado);
+  }
+  if (ean) {
+    return base.find((p) => p.produtoEan === ean);
+  }
+  return undefined;
+};
+
 interface PesquisaProdutoProps {
   produtosValidos: ProdutoValido[];
   onProdutoCadastrado?: (novoProduto: ProdutoValido, foiVinculado?: boolean) => void;
@@ -159,9 +181,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
       const dadosExtraidos = extrairDados(term);
       if (dadosExtraidos) {
         const { ean, dun, validade } = dadosExtraidos;
-        const prod = produtosValidos.find(
-          (p) => (dun && p.produtoDun === dun) || (ean && p.produtoEan === ean)
-        );
+        const prod = obterProdutoPorCodigo(ean, dun, produtosValidos);
         if (prod) {
           setIsWatchlistMatch(watchlist.some((w) => w.produtoEan === prod.produtoEan));
           setIsMatchCelebration(false);
@@ -317,13 +337,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     }
 
     const { ean, dun, validade } = dados;
-    let foundProduct: ProdutoValido | undefined;
-
-    if (dun) {
-      foundProduct = produtosValidos.find((p) => p.produtoDun === dun);
-    } else if (ean) {
-      foundProduct = produtosValidos.find((p) => p.produtoEan === ean);
-    }
+    const foundProduct = obterProdutoPorCodigo(ean, dun, produtosValidos);
 
     if (!foundProduct) {
       showToast(`Código ${dun || ean} não identificado no cadastro. Abrindo cadastro...`, 'info');
@@ -572,7 +586,12 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
                     setIsMatchCelebration(false);
                     
                     const dadosExtraidos = extrairDados(debouncedSearchTerm.trim());
-                    if (dadosExtraidos && dadosExtraidos.validade && (dadosExtraidos.dun === prod.produtoDun || dadosExtraidos.ean === prod.produtoEan)) {
+                    let matchesProduct = false;
+                    if (dadosExtraidos) {
+                      const derivedProd = obterProdutoPorCodigo(dadosExtraidos.ean, dadosExtraidos.dun, produtosValidos);
+                      matchesProduct = derivedProd ? (derivedProd.produtoEan === prod.produtoEan) : false;
+                    }
+                    if (dadosExtraidos && dadosExtraidos.validade && matchesProduct) {
                       setSelectedProductValidade(dadosExtraidos.validade);
                     } else {
                       setSelectedProductValidade(null);
