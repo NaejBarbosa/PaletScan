@@ -8,7 +8,7 @@ Uma solução moderna e intuitiva de escaneamento de códigos de barras, projeta
 
 ## 🎯 Proposta, Estratégia & Autoria
 
-O **PaletScan** não nasceu em uma sala de reuniões corporativas, mas sim no cotidiano logístico do chão de fábrica. O projeto foi idealizado e inteiramente desenvolvido por **Jean Barbosa**, Operador de Empilhadeira na **Loja 410 do Fort Atacadista (Florianópolis - SC)**, em parceria inteligente com o **Agente Antigravity** (IA da Google DeepMind). A aplicação une o conhecimento prático da rotina de armazenagem com soluções modernas de tecnologia para eliminar o atrito no controle de validades e no endereçamento.
+O **PaletScan** não nasceu em uma sala de reuniões corporativas, mas sim no cotidiano logístico do chão de fábrica. O projeto foi idealizado e inteiramente desenvolvido por **Jean Barbosa**, Operador de Empilhadeira do setor de Perecíveis na **Loja 410 do Fort Atacadista (Florianópolis - SC)** — uma unidade desta rede de atacarejo —, em parceria inteligente com o **Agente Antigravity** (IA da Google DeepMind). A aplicação une o conhecimento prático da rotina de armazenagem com soluções modernas de tecnologia para eliminar o atrito no controle de validades e no endereçamento.
 
 A armazenagem e a gestão de estoque em câmaras frias exigem foco operacional e eficiência máxima. A estratégia principal do **PaletScan** baseia-se em dois pilares fundamentais:
 
@@ -67,7 +67,7 @@ O código de endereçamento físico segue o padrão Rack, Módulo, Gaveta e Vaga
 Para garantir a acuracidade da localização de cada lote estocado nas câmaras (**Resfriados 1, Resfriados 2, Congelados 1 e Congelados 2**), o processo segue o fluxo operacional abaixo:
 
 1. **Gravação dos Dados:** O operador realiza a leitura e o cadastro dos dados do palete no aplicativo (associando o produto à câmara e vaga correspondentes).
-2. **Colagem das Etiquetas:** Após gravar os dados, o operador cola no **primeiro lastro do palete** (de baixo para cima e por baixo do plástico filme) uma etiqueta física contendo o código de endereçamento mais as iniciais da câmara (ex: `R1-A32E` ou `C2-B20D`). São coladas duas etiquetas por palete: **uma na frente e outra atrás**.
+2. **Marcação e Colagem das Etiquetas:** Para a sinalização física, é utilizada a **etiqueta adesiva da impressora da balança**, colada diretamente no papelão da caixa do produto (no **primeiro lastro do palete**, de baixo para cima e por baixo do plástico filme). O operador escreve à mão a identificação (o código de endereçamento mais as iniciais da câmara, ex: `R1-A32E` ou `C2-B20D`) utilizando um **canetão de cor vermelha**. São coladas duas etiquetas por palete: **uma na frente e outra atrás**.
 3. **Resiliência de Controle:** Mesmo que, por alguma eventualidade operacional, o palete não seja colocado exatamente na vaga correta dentro da câmara, o controle do estoque é mantido com sucesso. Isso é garantido pois o palete carrega a sinalização física legível de sua vaga planejada e o número de variações do código de endereçamento é finito para cada câmara.
 
 ---
