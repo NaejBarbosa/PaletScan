@@ -404,22 +404,22 @@ function HomeContent() {
       <header className="sticky top-0 z-40 glass border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-3">
               {/* Botão de voltar quando não estiver no menu inicial */}
               {activeTab !== 'menu' && (
                 <button
                   onClick={() => setActiveTab('menu')}
-                  className="p-1.5 sm:p-2 mr-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 transition-all flex items-center justify-center shadow-sm flex-shrink-0"
+                  className="p-2 mr-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 transition-all flex items-center justify-center shadow-sm flex-shrink-0"
                   title={language === 'pt' ? 'Voltar ao Painel Inicial' : 'Volver al Panel Inicial'}
                 >
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
                 </button>
               )}
 
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center shadow-md animate-pulse-subtle flex-shrink-0">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center shadow-md animate-pulse-subtle flex-shrink-0">
+                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
                   <path d="M6 10.5l6-3.5 6 3.5-6 3.5-6-3.5z" />
                   <path d="M6 14.5l6-3.5 6 3.5-6 3.5-6-3.5z" />
@@ -427,30 +427,31 @@ function HomeContent() {
                 </svg>
               </div>
               <div className="flex flex-col min-w-0">
-                <div className="flex items-baseline gap-1">
-                  <h1 className="text-sm sm:text-lg font-extrabold text-slate-900 dark:text-slate-100 leading-none tracking-tight">
+                <div className="flex items-baseline gap-1.5">
+                  <h1 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 leading-none tracking-tight">
                     Palet<span className="text-primary-600 dark:text-primary-500">Scan</span>
                   </h1>
-                  <span className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase">
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase">
                     v1.2
                   </span>
                 </div>
                 
-                <div className="flex items-center gap-1.5 mt-0.5 sm:mt-1 flex-wrap">
-                  <span className="hidden xs:inline-block text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-wide uppercase">
+                {/* Status Recebimento - Apenas no Desktop */}
+                <div className="hidden sm:flex items-center gap-1.5 mt-1">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-wide uppercase">
                     {language === 'pt' ? 'Recebimento' : 'Recepción'}
                   </span>
                   {sessaoAtiva && activeTab === 'scan' && (
-                    <div className="flex items-center gap-1 sm:gap-1.5 animate-fadeIn">
+                    <div className="flex items-center gap-1.5 animate-fadeIn">
                       <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[9px] sm:text-[10px] font-bold text-primary-600 dark:text-primary-400 whitespace-nowrap">
+                      <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400 whitespace-nowrap">
                         {sessaoAtiva.camara} · {sessaoAtiva.vaga}
                       </span>
                       <button
                         id="btn-redefinir-sessao"
                         onClick={redefinirSessao}
                         title={language === 'pt' ? 'Redefinir câmara/vaga' : 'Redefinir cámara/posición'}
-                        className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 hover:text-danger-500 dark:hover:text-danger-400 transition-colors underline font-medium"
+                        className="text-[9px] text-slate-400 dark:text-slate-500 hover:text-danger-500 dark:hover:text-danger-400 transition-colors underline font-medium"
                       >
                         {language === 'pt' ? '(trocar)' : '(cambiar)'}
                       </button>
@@ -460,12 +461,12 @@ function HomeContent() {
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
               {/* Seletor de Idioma PT / ES */}
               <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5 border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-xs font-semibold">
                 <button
                   onClick={() => setLanguage('pt')}
-                  className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg transition-all active:scale-95 text-[9px] sm:text-xs ${
+                  className={`px-2 py-1 rounded-lg transition-all active:scale-95 text-xs ${
                     language === 'pt'
                       ? 'bg-primary-500 text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
@@ -476,7 +477,7 @@ function HomeContent() {
                 </button>
                 <button
                   onClick={() => setLanguage('es')}
-                  className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg transition-all active:scale-95 text-[9px] sm:text-xs ${
+                  className={`px-2 py-1 rounded-lg transition-all active:scale-95 text-xs ${
                     language === 'es'
                       ? 'bg-primary-500 text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
@@ -493,17 +494,39 @@ function HomeContent() {
                 aria-label="Alternar tema"
               >
                 {theme === 'dark' ? (
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 ) : (
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                   </svg>
                 )}
               </button>
             </div>
           </div>
+
+          {/* Status Recebimento Secundário - Exibido apenas no Mobile */}
+          {sessaoAtiva && activeTab === 'scan' && (
+            <div className="flex sm:hidden items-center justify-between pb-3 pt-1 animate-fadeIn border-t border-slate-200/40 dark:border-slate-800/60 mt-1">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold tracking-wide uppercase">
+                  {language === 'pt' ? 'Recebimento' : 'Recepción'}
+                </span>
+                <span className="text-xs font-extrabold text-primary-600 dark:text-primary-400">
+                  {sessaoAtiva.camara} · {sessaoAtiva.vaga}
+                </span>
+              </div>
+              <button
+                onClick={redefinirSessao}
+                title={language === 'pt' ? 'Redefinir câmara/vaga' : 'Redefinir cámara/posición'}
+                className="text-[10px] text-slate-500 hover:text-danger-500 dark:text-slate-400 dark:hover:text-danger-400 transition-colors underline font-bold"
+              >
+                {language === 'pt' ? '(trocar)' : '(cambiar)'}
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
