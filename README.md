@@ -8,7 +8,7 @@ Uma solução moderna e intuitiva de escaneamento de códigos de barras, projeta
 
 ## 🎯 Proposta, Estratégia & Autoria
 
-O **PaletScan** não nasceu em uma sala de reuniões corporativas, mas sim no cotidiano logístico do chão de fábrica. O projeto foi idealizado e inteiramente desenvolvido por **Jean Barbosa**, Operador de Empilhadeira do setor de Perecíveis na **Loja 410 do Fort Atacadista (Florianópolis - SC)** — uma unidade desta rede de atacarejo —, em parceria inteligente com o **Agente Antigravity** (IA da Google DeepMind). A aplicação une o conhecimento prático da rotina de armazenagem com soluções modernas de tecnologia para eliminar o atrito no controle de validades e no endereçamento.
+O **PaletScan** não nasceu em uma sala de reuniões corporativas, mas sim no cotidiano logístico do chão de fábrica. O projeto foi idealizado e inteiramente desenvolvido por **Jean Barbosa**, Operador de Empilhadeira do setor de Perecíveis na **Loja 410 do Fort Atacadista no Rio Tavares (Florianópolis - SC)** — uma unidade desta rede de atacarejo —, em parceria inteligente com o **Agente Antigravity** (IA da Google DeepMind). A aplicação une o conhecimento prático da rotina de armazenagem com soluções modernas de tecnologia para eliminar o atrito no controle de validades e no endereçamento.
 
 A armazenagem e a gestão de estoque em câmaras frias exigem foco operacional e eficiência máxima. A estratégia principal do **PaletScan** baseia-se em dois pilares fundamentais:
 
