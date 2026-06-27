@@ -633,6 +633,15 @@ function HomeContent() {
         )}
       </main>
 
+      <footer className="w-full py-8 text-center border-t border-slate-200/30 dark:border-slate-800/30 mt-12">
+        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold tracking-wider uppercase">
+          PaletScan · Recebimento & Câmaras Frias
+        </p>
+        <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1.5 font-medium tracking-wide">
+          Designed & Developed by <span className="font-bold text-slate-500 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">Jean Barbosa</span>
+        </p>
+      </footer>
+
       {/* Modal de confirmação com backdrop corrigido e conservação */}
       {mounted && confirmacao && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
