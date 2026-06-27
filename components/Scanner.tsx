@@ -416,18 +416,9 @@ export default function Scanner({
             autoPlay
           />
 
-          {/* Overlay escurecido nas bordas com furo jateado no meio (viewfinder) */}
-          <div className="absolute inset-0 pointer-events-none flex flex-col z-0">
-            {/* Topo escurecido */}
-            <div className="flex-1 bg-black/55 backdrop-blur-[1px]" />
-            {/* Meio com abertura transparente */}
-            <div className="flex h-64 md:h-80 flex-shrink-0">
-              <div className="flex-1 bg-black/55 backdrop-blur-[1px]" />
-              <div className="w-64 md:w-80 bg-transparent flex-shrink-0" />
-              <div className="flex-1 bg-black/55 backdrop-blur-[1px]" />
-            </div>
-            {/* Base escurecida */}
-            <div className="flex-1 bg-black/55 backdrop-blur-[1px]" />
+          {/* Overlay escurecido nas bordas com furo no meio (viewfinder) com cantos arredondados acompanhando o contorno */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-0">
+            <div className="w-64 h-64 md:w-80 md:h-80 rounded-3xl shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]" />
           </div>
 
           {/* Painel Superior Flutuante */}
