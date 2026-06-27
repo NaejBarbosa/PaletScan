@@ -6,6 +6,7 @@ import * as fuzzball from 'fuzzball';
 import Scanner from './Scanner';
 import { extrairDados } from '../lib/regex';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import CadastroProdutoModal from './CadastroProdutoModal';
 import DetalheProdutoModal from './DetalheProdutoModal';
 
@@ -52,47 +53,35 @@ interface PesquisaProdutoProps {
 
 export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }: PesquisaProdutoProps) {
   const { theme } = useTheme();
+  const { language, t } = useLanguage();
   
+  const [innerTab, setInnerTab] = useState<'radar' | 'busca'>('radar');
+  
+  // Lista de monitorados no Radar (Watchlist) carregado de localStorage
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [novoEanProcurado, setNovoEanProcurado] = useState('');
+  const [showAddManual, setShowAddManual] = useState(false);
   const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'error' } | null>(null);
 
+  // Estados dos modais internos
+  const [selectedProduct, setSelectedProduct] = useState<ProdutoValido | null>(null);
+  const [selectedProductValidade, setSelectedProductValidade] = useState<string | null>(null);
+  const [isWatchlistMatch, setIsWatchlistMatch] = useState(false);
+  const [isMatchCelebration, setIsMatchCelebration] = useState(false);
   const [cadastroNaoIdentificado, setCadastroNaoIdentificado] = useState<{
     ean: string;
     dun: string;
-    adicionarWatchlist?: boolean;
     produtoParaVincular?: ProdutoValido;
+    adicionarWatchlist?: boolean;
   } | null>(null);
 
-  const handleCadastroProdutoSuccess = (novoProduto: ProdutoValido, foiVinculado?: boolean) => {
-    if (onProdutoCadastrado) {
-      onProdutoCadastrado(novoProduto, foiVinculado);
-    }
-    if (cadastroNaoIdentificado?.adicionarWatchlist) {
-      const newList = [...watchlist, { ...novoProduto, localizado: false }];
-      saveWatchlist(newList);
-      setNovoEanProcurado('');
-      setShowAddManual(false);
-      showToast(foiVinculado ? 'Produto vinculado e adicionado ao Radar!' : 'Produto cadastrado e adicionado ao Radar!', 'success');
-    } else {
-      showToast(foiVinculado ? 'Produto vinculado com sucesso!' : 'Produto cadastrado com sucesso!', 'success');
-      setIsWatchlistMatch(watchlist.some((w) => w.produtoEan === novoProduto.produtoEan));
-      setIsMatchCelebration(false);
-      setSelectedProduct(novoProduto);
-    }
-    setCadastroNaoIdentificado(null);
-  };
-  
-  // Abas internas: 'radar' (Scanner + Watchlist) ou 'pesquisa' (Fuzzy Search)
-  const [innerTab, setInnerTab] = useState<'radar' | 'busca'>('radar');
-  
-  // Estados para Busca Fuzzy
+  // Estados para busca textual fuzzy
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const searchResultsRef = useRef<HTMLDivElement>(null);
 
-  // Executa debounce no termo de busca para evitar travamentos de renderização
+  // Efeito de debounce para a busca textual fuzzy
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -100,130 +89,70 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Reseta a rolagem do container ao mudar o termo de busca debounced (após pintura do DOM)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchResultsRef.current) {
-        searchResultsRef.current.scrollTop = 0;
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [debouncedSearchTerm]);
-  
-  // Estados para Watchlist (Radar)
-  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
-  const [novoEanProcurado, setNovoEanProcurado] = useState('');
-  const [showAddManual, setShowAddManual] = useState(false);
-
-  // Estados para o Modal de Detalhes
-  const [selectedProduct, setSelectedProduct] = useState<ProdutoValido | null>(null);
-  const [selectedProductValidade, setSelectedProductValidade] = useState<string | null>(null);
-  const [isWatchlistMatch, setIsWatchlistMatch] = useState(false);
-  const [isMatchCelebration, setIsMatchCelebration] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-
-  // Carregar e persistir a Watchlist no localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('radar_watchlist');
+    setMounted(true);
+    const saved = localStorage.getItem('watchlist');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setWatchlist(parsed);
-      } catch (e) {
-        console.error('Erro ao ler watchlist do localStorage', e);
+        setWatchlist(JSON.parse(saved));
+      } catch (err) {
+        console.error('Erro ao ler watchlist do localStorage', err);
       }
     }
   }, []);
 
-  const triggerConfetti = () => {
-    confetti({
-      particleCount: 150,
-      spread: 80,
-      origin: { y: 0.6 },
-      zIndex: 9999,
-    });
-
-    const duration = 2 * 1000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
-
-    const interval: any = setInterval(function() {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
-      }
-
-      const particleCount = 50 * (timeLeft / duration);
-      confetti({ ...defaults, particleCount, origin: { x: Math.random() * 0.3 + 0.1, y: Math.random() - 0.2 } });
-      confetti({ ...defaults, particleCount, origin: { x: Math.random() * 0.3 + 0.6, y: Math.random() - 0.2 } });
-    }, 200);
+  const showToast = (message: string, type: 'info' | 'success' | 'error') => {
+    setToast({ message, type });
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 2800);
+    return () => clearTimeout(timer);
   };
 
-  useEffect(() => {
-    if (selectedProduct && isMatchCelebration) {
-      triggerConfetti();
-    }
-  }, [selectedProduct, isMatchCelebration]);
-
-  useEffect(() => {
-    if (!selectedProduct) {
-      setSelectedProductValidade(null);
-    }
-  }, [selectedProduct]);
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const term = searchTerm.trim();
-      if (!term) return;
-
-      const dadosExtraidos = extrairDados(term);
-      if (dadosExtraidos) {
-        const { ean, dun, validade } = dadosExtraidos;
-        const prod = obterProdutoPorCodigo(ean, dun, produtosValidos);
-        if (prod) {
-          setIsWatchlistMatch(watchlist.some((w) => w.produtoEan === prod.produtoEan));
-          setIsMatchCelebration(false);
-          if (validade) {
-            setSelectedProductValidade(validade);
-          } else {
-            setSelectedProductValidade(null);
-          }
-          setSelectedProduct(prod);
-          showToast('Produto identificado via código!', 'success');
-        } else {
-          showToast(`Código ${dun || ean} não identificado no cadastro. Abrindo cadastro...`, 'info');
-          setCadastroNaoIdentificado({
-            ean: ean || '',
-            dun: dun || ''
-          });
-        }
-      }
-    }
-  };
-
-  const saveWatchlist = (list: WatchlistItem[]) => {
-    setWatchlist(list);
-    localStorage.setItem('radar_watchlist', JSON.stringify(list));
+  const saveWatchlist = (newList: WatchlistItem[]) => {
+    setWatchlist(newList);
+    localStorage.setItem('watchlist', JSON.stringify(newList));
   };
 
   const toggleLocalizado = (ean: string) => {
     const newList = watchlist.map((item) => {
       if (item.produtoEan === ean) {
-        return { ...item, localizado: !item.localizado };
+        const nextState = !item.localizado;
+        if (nextState) {
+          confetti({
+            particleCount: 80,
+            spread: 50,
+            origin: { y: 0.8 },
+            colors: ['#06b6d4', '#6366f1', '#10b981']
+          });
+        }
+        return { ...item, localizado: nextState };
       }
       return item;
     });
     saveWatchlist(newList);
   };
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+  // Cadastro de produto não identificado
+  const handleCadastroProdutoSuccess = (novoProduto: ProdutoValido, foiVinculado?: boolean) => {
+    setCadastroNaoIdentificado(null);
+    if (onProdutoCadastrado) {
+      onProdutoCadastrado(novoProduto, foiVinculado);
+    }
+    
+    // Se o cadastro foi disparado da Watchlist, adiciona no radar
+    if (cadastroNaoIdentificado?.adicionarWatchlist) {
+      if (!watchlist.some((p) => p.produtoEan === novoProduto.produtoEan)) {
+        const newList = [...watchlist, { ...novoProduto, localizado: false }];
+        saveWatchlist(newList);
+      }
+    }
+    
+    // Sucesso
+    showToast(t('toastSucessoSalvar'), 'success');
   };
 
-  // 1. Lógica de Busca Fuzzy
+  // Normalização de string para o fuzzy
   const removeAccents = (text: string): string => {
     return text
       .toLowerCase()
@@ -231,22 +160,18 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
       .replace(/[\u0300-\u036f]/g, '');
   };
 
+  // Evita resetar se a digitação no input for lenta
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
+  // Lógica de busca fuzzy usando fuzzball
   const filteredProducts = useMemo(() => {
     const cleanTerm = debouncedSearchTerm.trim();
     if (!cleanTerm || cleanTerm.length < 2) return [];
 
-    // Tenta validar com Regex (Data Matrix, GS1 bruto, etc.)
-    const dadosExtraidos = extrairDados(cleanTerm);
-    if (dadosExtraidos) {
-      const { ean, dun } = dadosExtraidos;
-      const prod = produtosValidos.find(
-        (p) => (dun && p.produtoDun === dun) || (ean && p.produtoEan === ean)
-      );
-      if (prod) {
-        return [prod];
-      }
-    }
-    
     const termNorm = removeAccents(cleanTerm);
     
     // Monta a string de busca de forma análoga ao app.py (Marca + Descrição + Classe)
@@ -274,10 +199,10 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     let newList = [...watchlist];
     if (index >= 0) {
       newList.splice(index, 1);
-      showToast('Produto removido do Radar', 'info');
+      showToast(language === 'pt' ? 'Produto removido do Radar' : 'Producto eliminado del Radar', 'info');
     } else {
       newList.push({ ...product, localizado: false });
-      showToast('Produto adicionado ao Radar!', 'success');
+      showToast(language === 'pt' ? 'Produto adicionado ao Radar!' : '¡Producto agregado al Radar!', 'success');
     }
     saveWatchlist(newList);
   };
@@ -294,7 +219,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     const dunProcurado = dados?.dun || (text.length === 14 ? text : undefined);
     
     if (!dados && text.length !== 13 && text.length !== 14 && text.length !== 8) {
-      showToast('Código de barras ou Data Matrix inválido.', 'error');
+      showToast(language === 'pt' ? 'Código de barras ou Data Matrix inválido.' : 'Código de barras o Data Matrix inválido.', 'error');
       return;
     }
 
@@ -307,7 +232,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     );
 
     if (!product) {
-      showToast('Código não cadastrado na base de produtos. Abrindo cadastro...', 'info');
+      showToast(language === 'pt' ? 'Código não cadastrado na base de produtos. Abrindo cadastro...' : 'Código no registrado en la base de productos. Abriendo registro...', 'info');
       setCadastroNaoIdentificado({
         ean: eanProcurado || (text.length !== 14 ? text : ''),
         dun: dunProcurado || (text.length === 14 ? text : ''),
@@ -317,7 +242,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     }
 
     if (watchlist.some((p) => p.produtoEan === product.produtoEan)) {
-      showToast('Este produto já está cadastrado na lista de procurados.', 'info');
+      showToast(language === 'pt' ? 'Este produto já está cadastrado na lista de procurados.' : 'Este producto ya está registrado en la lista de buscados.', 'info');
       return;
     }
 
@@ -325,14 +250,14 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     saveWatchlist(newList);
     setNovoEanProcurado('');
     setShowAddManual(false);
-    showToast('Produto adicionado ao Radar!', 'success');
+    showToast(language === 'pt' ? 'Produto adicionado ao Radar!' : '¡Producto agregado al Radar!', 'success');
   };
 
   // 3. Lógica para Leitura Rápida (Scanner)
   const handleDetectedScan = (text: string) => {
     const dados = extrairDados(text);
     if (!dados) {
-      showToast('Código inválido. Tente novamente.', 'error');
+      showToast(language === 'pt' ? 'Código inválido. Tente novamente.' : 'Código inválido. Inténtelo de nuevo.', 'error');
       return;
     }
 
@@ -340,7 +265,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     const foundProduct = obterProdutoPorCodigo(ean, dun, produtosValidos);
 
     if (!foundProduct) {
-      showToast(`Código ${dun || ean} não identificado no cadastro. Abrindo cadastro...`, 'info');
+      showToast(language === 'pt' ? `Código ${dun || ean} não identificado no cadastro. Abrindo cadastro...` : `Código ${dun || ean} no identificado. Abriendo registro...`, 'info');
       setCadastroNaoIdentificado({
         ean: ean || '',
         dun: dun || ''
@@ -348,43 +273,38 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
       return;
     }
 
-    // Verifica se pertence à Lista de Procurados (Watchlist)
-    const watchlistEntry = watchlist.find((p) => p.produtoEan === foundProduct?.produtoEan);
-    const isMatch = !!watchlistEntry;
-    const isPendingMatch = watchlistEntry && !watchlistEntry.localizado;
+    // Verifica se produto escaneado está na watchlist
+    const isMatched = watchlist.some((w) => w.produtoEan === foundProduct.produtoEan);
     
-    setIsWatchlistMatch(isMatch);
-    setIsMatchCelebration(!!isPendingMatch);
-
-    if (validade) {
-      setSelectedProductValidade(validade);
-    } else {
-      setSelectedProductValidade(null);
+    setIsWatchlistMatch(isMatched);
+    if (isMatched) {
+      // Dispara confetes e celebração no modal
+      setIsMatchCelebration(true);
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.65 },
+        colors: ['#06b6d4', '#6366f1', '#10b981']
+      });
+      showToast(language === 'pt' ? '⚡ Radar Match! Produto procurado detectado!' : '⚡ ¡Radar Match! ¡Producto buscado detectado!', 'success');
+      
+      // Auto marca como localizado se escaneado
+      const index = watchlist.findIndex((p) => p.produtoEan === foundProduct.produtoEan);
+      if (index >= 0 && !watchlist[index].localizado) {
+        const newList = [...watchlist];
+        newList[index] = { ...newList[index], localizado: true };
+        saveWatchlist(newList);
+      }
     }
 
     setSelectedProduct(foundProduct);
-
-    if (isPendingMatch) {
-      showToast('🎯 PRODUTO LOCALIZADO NO RADAR!', 'success');
-      // Marca como localizado e salva
-      const newList = watchlist.map((item) => {
-        if (item.produtoEan === foundProduct?.produtoEan) {
-          return { ...item, localizado: true };
-        }
-        return item;
-      });
-      saveWatchlist(newList);
-    } else if (isMatch) {
-      showToast('Produto localizado (já foi encontrado anteriormente no radar).', 'info');
-    } else {
-      showToast('Produto localizado na base!', 'success');
-    }
+    setSelectedProductValidade(validade || null);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Abas Internas de Operação */}
-      <div className="flex bg-slate-200/50 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200/40 dark:border-slate-700/40 max-w-md mx-auto animate-fadeIn">
+    <div className="space-y-6 max-w-7xl mx-auto animate-fadeIn">
+      {/* Abas Internas */}
+      <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-sm max-w-md mx-auto">
         <button
           onClick={() => setInnerTab('radar')}
           className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 ${
@@ -396,7 +316,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          Scanner & Radar
+          {language === 'pt' ? 'Scanner & Radar' : 'Lector & Radar'}
         </button>
         <button
           onClick={() => setInnerTab('busca')}
@@ -409,7 +329,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          Busca por Texto
+          {language === 'pt' ? 'Busca por Texto' : 'Búsqueda por Texto'}
         </button>
       </div>
 
@@ -425,10 +345,10 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
                   </span>
-                  Leitura Rápida e Consulta de EAN/DUN
+                  {language === 'pt' ? 'Leitura Rápida e Consulta de EAN/DUN' : 'Lectura Rápida y Consulta de EAN/DUN'}
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Escaneie um código para ver detalhes do produto imediatamente, sem cadastrar validade.
+                  {language === 'pt' ? 'Escaneie um código para ver detalhes do produto imediatamente, sem cadastrar validade.' : 'Escanee un código para ver los detalles del producto de inmediato, sin registrar vencimiento.'}
                 </p>
               </div>
               <div className="p-1">
@@ -444,13 +364,13 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
               
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                  🎯 Lista de Procurados
+                  🎯 {language === 'pt' ? 'Lista de Procurados' : 'Lista de Buscados'}
                 </h3>
                 <button
                   onClick={() => setShowAddManual(!showAddManual)}
                   className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1"
                 >
-                  {showAddManual ? 'Cancelar' : 'Adicionar EAN'}
+                  {showAddManual ? 'Cancelar' : (language === 'pt' ? 'Adicionar EAN' : 'Agregar EAN')}
                 </button>
               </div>
 
@@ -459,7 +379,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
                 <form onSubmit={handleAddManualEan} className="mb-4 space-y-2 animate-slideDown">
                   <input
                     type="text"
-                    placeholder="Digite o EAN ou DUN..."
+                    placeholder={language === 'pt' ? 'Digite o EAN ou DUN...' : 'Ingrese el EAN o DUN...'}
                     value={novoEanProcurado}
                     onChange={(e) => setNovoEanProcurado(e.target.value)}
                     className="input-field py-2 text-sm"
@@ -474,7 +394,10 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
               {watchlist.length === 0 ? (
                 <div className="text-center py-8 px-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30">
                   <p className="text-xs text-slate-400 dark:text-slate-500">
-                    Nenhum produto monitorado no radar. Adicione produtos na busca por texto para acompanhar.
+                    {language === 'pt' 
+                      ? 'Nenhum produto monitorado no radar. Adicione produtos na busca por texto para acompanhar.' 
+                      : 'Ningún producto monitoreado en el radar. Agregue productos en la búsqueda de texto para realizar el seguimiento.'
+                    }
                   </p>
                 </div>
               ) : (
@@ -496,7 +419,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
                             ? 'bg-success-100 border-success-200 text-success-600 dark:bg-success-900/30 dark:border-success-800 dark:text-success-400 hover:bg-success-200'
                             : 'bg-white border-slate-200 text-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-500'
                         }`}
-                        title={prod.localizado ? "Marcar como não localizado" : "Marcar como localizado"}
+                        title={prod.localizado ? (language === 'pt' ? "Marcar como não localizado" : "Marcar como no localizado") : (language === 'pt' ? "Marcar como localizado" : "Marcar como localizado")}
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -527,7 +450,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
                       <button
                         onClick={() => toggleWatchlist(prod)}
                         className="p-1.5 rounded bg-slate-200/60 hover:bg-danger-100 dark:bg-slate-800/50 text-slate-500 hover:text-danger-600 dark:hover:text-danger-400 transition-colors flex items-center justify-center flex-shrink-0"
-                        title="Remover do Radar"
+                        title={language === 'pt' ? "Remover do Radar" : "Eliminar del Radar"}
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -549,7 +472,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
           <div className="relative">
             <input
               type="text"
-              placeholder="Pesquise por marca, produto, EAN ou DUN (ex: sobrecoxa bandeja sadia)..."
+              placeholder={language === 'pt' ? "Pesquise por marca, produto, EAN ou DUN (ex: sobrecoxa bandeja sadia)..." : "Busque por marca, producto, EAN o DUN (ej: sobrecoxa bandeja sadia)..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleSearchKeyDown}
@@ -568,13 +491,21 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
               <svg className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15" />
               </svg>
-              <p className="text-sm font-medium">Digite pelo menos 2 caracteres para pesquisar</p>
-              <p className="text-xs mt-1 text-slate-500">A pesquisa filtra instantaneamente na base de dados de produtos válidos.</p>
+              <p className="text-sm font-medium">
+                {language === 'pt' ? 'Digite pelo menos 2 caracteres para pesquisar' : 'Ingrese al menos 2 caracteres para buscar'}
+              </p>
+              <p className="text-xs mt-1 text-slate-500">
+                {language === 'pt' ? 'A pesquisa filtra instantaneamente na base de dados de produtos válidos.' : 'La búsqueda filtra instantáneamente en la base de datos de productos válidos.'}
+              </p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-12 px-4 text-slate-400 dark:text-slate-500">
-              <p className="text-sm font-medium">Nenhum produto correspondente encontrado.</p>
-              <p className="text-xs mt-1 text-slate-500">Verifique a grafia dos termos ou tente buscar por códigos de barras.</p>
+              <p className="text-sm font-medium">
+                {language === 'pt' ? 'Nenhum produto correspondente encontrado.' : 'Ningún producto correspondiente encontrado.'}
+              </p>
+              <p className="text-xs mt-1 text-slate-500">
+                {language === 'pt' ? 'Verifique a grafia dos termos ou tente buscar por códigos de barras.' : 'Verifique la ortografía de los términos o intente buscar por códigos de barras.'}
+              </p>
             </div>
           ) : (
             <div ref={searchResultsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin">
@@ -614,7 +545,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
                   <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                     <span className="font-mono">EAN: {prod.produtoEan}</span>
                     <span className="font-semibold text-primary-600 dark:text-primary-400 group-hover:underline flex items-center gap-0.5">
-                      Detalhes
+                      {language === 'pt' ? 'Detalhes' : 'Detalles'}
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>

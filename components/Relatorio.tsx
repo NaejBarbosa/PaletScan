@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Registro {
   id: string;
@@ -14,6 +15,8 @@ interface Registro {
 }
 
 export default function Relatorio() {
+  const { language, t } = useLanguage();
+
   const [registros, setRegistros] = useState<Registro[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,25 +42,25 @@ export default function Relatorio() {
     setError(null);
     fetch('/api/cadastrados')
       .then((res) => {
-        if (!res.ok) throw new Error('Falha ao carregar registros cadastrados.');
+        if (!res.ok) throw new Error(language === 'pt' ? 'Falha ao carregar registros cadastrados.' : 'Fallo al cargar registros registrados.');
         return res.json();
       })
       .then((data) => {
         if (Array.isArray(data)) {
-          // Ordena decrescente por ID ou data de registro para os mais recentes aparecerem primeiro
-          const ordenados = [...data].sort((a, b) => {
-            const idA = parseInt(a.id, 10) || 0;
-            const idB = parseInt(b.id, 10) || 0;
-            return idB - idA;
+          // Ordena decrescente pelo timestamp (os mais recentes primeiro)
+          const sorted = data.sort((a, b) => {
+            const dateA = new Date(a.timestamp.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
+            const dateB = new Date(b.timestamp.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
+            return dateB.getTime() - dateA.getTime();
           });
-          setRegistros(ordenados);
+          setRegistros(sorted);
         } else {
-          setError('Dados retornados em formato incorreto.');
+          console.error('Dados de cadastrados inválidos:', data);
         }
       })
       .catch((err) => {
         console.error(err);
-        setError(err.message || 'Erro de conexão.');
+        setError(err.message || (language === 'pt' ? 'Falha ao conectar com o servidor.' : 'Fallo al conectar con el servidor.'));
       })
       .finally(() => setIsLoading(false));
   };
@@ -66,77 +69,42 @@ export default function Relatorio() {
     carregarDados();
   }, []);
 
-  // Lógica de parser de datas para filtros inteligentes
-  const parseValidade = (str: string): Date | null => {
-    if (!str) return null;
-    const parts = str.split('/');
-    if (parts.length !== 3) return null;
-    const d = parseInt(parts[0], 10);
-    const m = parseInt(parts[1], 10) - 1;
-    const a = parseInt(parts[2], 10);
-    if (isNaN(d) || isNaN(m) || isNaN(a)) return null;
-    return new Date(a, m, d, 12, 0, 0, 0); // meio dia para mitigar fuso horário
-  };
+  // Extrair opções únicas para os selects dos filtros
+  const marcasDisponiveis = useMemo(() => {
+    const unique = Array.from(new Set(registros.map((r) => r.marcaDescr).filter(Boolean)));
+    return unique.sort();
+  }, [registros]);
 
-  const parseTimestamp = (str: string): Date | null => {
-    if (!str) return null;
-    const cleaned = str.replace(',', '');
-    const parts = cleaned.split(' ');
-    if (parts.length < 1) return null;
-    const dateParts = parts[0].split('/');
-    if (dateParts.length !== 3) return null;
-    const d = parseInt(dateParts[0], 10);
-    const m = parseInt(dateParts[1], 10) - 1;
-    const a = parseInt(dateParts[2], 10);
-    
-    let hours = 12, minutes = 0, seconds = 0;
-    if (parts.length >= 2) {
-      const timeParts = parts[1].split(':');
-      if (timeParts.length >= 3) {
-        hours = parseInt(timeParts[0], 10);
-        minutes = parseInt(timeParts[1], 10);
-        seconds = parseInt(timeParts[2], 10);
-      }
-    }
-    
-    if (isNaN(d) || isNaN(m) || isNaN(a)) return null;
-    return new Date(a, m, d, hours, minutes, seconds);
-  };
+  const classesDisponiveis = useMemo(() => {
+    const unique = Array.from(new Set(registros.map((r) => r.produtoClasse).filter(Boolean)));
+    return unique.sort();
+  }, [registros]);
 
-  // Obter referências de data
+  const camarasDisponiveis = useMemo(() => {
+    const unique = Array.from(new Set(registros.map((r) => r.camara).filter(Boolean)));
+    return unique.sort();
+  }, [registros]);
+
+  // Cálculos de datas para os filtros inteligentes
   const dateRanges = useMemo(() => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const day = hoje.getDay();
-    // Ajusta para segunda-feira da semana atual (no JS: 0=Dom, 1=Seg, ..., 6=Sáb)
-    const diffToMonday = day === 0 ? -6 : 1 - day;
+    // Início e fim da semana atual (Domingo a Sábado)
     const inicioSemanaAtual = new Date(hoje);
-    inicioSemanaAtual.setDate(hoje.getDate() + diffToMonday);
-    inicioSemanaAtual.setHours(0, 0, 0, 0);
-
+    inicioSemanaAtual.setDate(hoje.getDate() - hoje.getDay());
     const fimSemanaAtual = new Date(inicioSemanaAtual);
     fimSemanaAtual.setDate(inicioSemanaAtual.getDate() + 6);
-    fimSemanaAtual.setHours(23, 59, 59, 999);
 
-    const inicioProximaSemana = new Date(inicioSemanaAtual);
-    inicioProximaSemana.setDate(inicioSemanaAtual.getDate() + 7);
-    inicioProximaSemana.setHours(0, 0, 0, 0);
-
+    // Início e fim da próxima semana
+    const inicioProximaSemana = new Date(fimSemanaAtual);
+    inicioProximaSemana.setDate(fimSemanaAtual.getDate() + 1);
     const fimProximaSemana = new Date(inicioProximaSemana);
     fimProximaSemana.setDate(inicioProximaSemana.getDate() + 6);
-    fimProximaSemana.setHours(23, 59, 59, 999);
 
-    const inicioSemanaAnterior = new Date(inicioSemanaAtual);
-    inicioSemanaAnterior.setDate(inicioSemanaAtual.getDate() - 7);
-    inicioSemanaAnterior.setHours(0, 0, 0, 0);
-
-    const fimSemanaAnterior = new Date(inicioSemanaAnterior);
-    fimSemanaAnterior.setDate(inicioSemanaAnterior.getDate() + 6);
-    fimSemanaAnterior.setHours(23, 59, 59, 999);
-
-    const inicioMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1, 0, 0, 0, 0);
-    const fimMesAtual = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59, 999);
+    // Início e fim do mês atual
+    const inicioMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const fimMesAtual = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
 
     return {
       hoje,
@@ -144,127 +112,61 @@ export default function Relatorio() {
       fimSemanaAtual,
       inicioProximaSemana,
       fimProximaSemana,
-      inicioSemanaAnterior,
-      fimSemanaAnterior,
       inicioMesAtual,
       fimMesAtual,
     };
   }, []);
 
-  // Classifica os registros e calcula as estatísticas sobre os dados gerais
-  const stats = useMemo(() => {
-    let vencidos = 0;
-    let venceEstaSemana = 0;
-    let venceProximaSemana = 0;
+  // Parser de string "DD/MM/YYYY" para Date
+  const parseValidade = (validadeStr: string): Date | null => {
+    if (!validadeStr) return null;
+    const parts = validadeStr.split('/');
+    if (parts.length !== 3) return null;
+    return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+  };
 
-    registros.forEach((reg) => {
-      const validade = parseValidade(reg.produtoValidade);
-      if (validade) {
-        if (validade < dateRanges.hoje) {
-          vencidos++;
-        } else if (validade >= dateRanges.inicioSemanaAtual && validade <= dateRanges.fimSemanaAtual) {
-          venceEstaSemana++;
-        } else if (validade >= dateRanges.inicioProximaSemana && validade <= dateRanges.fimProximaSemana) {
-          venceProximaSemana++;
-        }
-      }
-    });
-
-    return {
-      total: registros.length,
-      vencidos,
-      venceEstaSemana,
-      venceProximaSemana,
-    };
-  }, [registros, dateRanges]);
-
-  // Listas exclusivas para preencher as opções dos selects de filtros
-  const marcasDisponiveis = useMemo(() => {
-    const set = new Set(registros.map((r) => r.marcaDescr).filter(Boolean));
-    return Array.from(set).sort();
-  }, [registros]);
-
-  const camarasDisponiveis = useMemo(() => {
-    const set = new Set(registros.map((r) => r.camara).filter(Boolean));
-    return Array.from(set).sort();
-  }, [registros]);
-
-  const classesDisponiveis = useMemo(() => {
-    const set = new Set(registros.map((r) => r.produtoClasse).filter(Boolean));
-    return Array.from(set).sort();
-  }, [registros]);
-
-  // Filtragem dos registros
+  // Lógica dos Filtros Combinados
   const registrosFiltrados = useMemo(() => {
     return registros.filter((reg) => {
-      // 1) Busca global por texto (EAN, Descrição, Marca, ID, Vaga)
+      // 1) Filtro de busca global (EAN, Descrição do Produto, ID do Registro, Vaga)
       if (filtroBusca.trim()) {
-        const busca = filtroBusca.toLowerCase();
-        const matchBusca =
-          reg.id.toLowerCase().includes(busca) ||
-          reg.produtoDescr.toLowerCase().includes(busca) ||
-          reg.produtoEan.toLowerCase().includes(busca) ||
-          reg.marcaDescr.toLowerCase().includes(busca) ||
-          reg.camaraVaga.toLowerCase().includes(busca);
-        if (!matchBusca) return false;
+        const query = filtroBusca.toLowerCase();
+        const eanMatch = reg.produtoEan.toLowerCase().includes(query);
+        const descMatch = reg.produtoDescr.toLowerCase().includes(query);
+        const idMatch = reg.id.toLowerCase().includes(query);
+        const vagaMatch = reg.camaraVaga.toLowerCase().includes(query);
+        if (!eanMatch && !descMatch && !idMatch && !vagaMatch) return false;
       }
 
-      // 2) Filtro por Marca
+      // 2) Filtro Marca
       if (filtroMarca && reg.marcaDescr !== filtroMarca) return false;
 
-      // 3) Filtro por Câmara
-      if (filtroCamara && reg.camara !== filtroCamara) return false;
-
-      // 4) Filtro por Vaga
-      if (filtroVaga.trim() && !reg.camaraVaga.toLowerCase().includes(filtroVaga.toLowerCase())) return false;
-
-      // 5) Filtro por Classe do Produto
+      // 3) Filtro Classe
       if (filtroClasse && reg.produtoClasse !== filtroClasse) return false;
 
-      // 6) Filtro inteligente de Vencimento
+      // 4) Filtro Câmara
+      if (filtroCamara && reg.camara !== filtroCamara) return false;
+
+      // 5) Filtro Vaga Exata
+      if (filtroVaga.trim() && !reg.camaraVaga.toLowerCase().includes(filtroVaga.trim().toLowerCase())) return false;
+
+      // 6) Filtro Inteligente de Vencimento
       if (filtroVencimentoSmart !== 'todos') {
         const validade = parseValidade(reg.produtoValidade);
         if (!validade) return false;
 
-        switch (filtroVencimentoSmart) {
-          case 'vencidos':
-            if (validade >= dateRanges.hoje) return false;
-            break;
-          case 'estaSemana':
-            if (validade < dateRanges.inicioSemanaAtual || validade > dateRanges.fimSemanaAtual) return false;
-            break;
-          case 'proximaSemana':
-            if (validade < dateRanges.inicioProximaSemana || validade > dateRanges.fimProximaSemana) return false;
-            break;
-          case 'esteMes':
-            if (validade < dateRanges.inicioMesAtual || validade > dateRanges.fimMesAtual) return false;
-            break;
-          default:
-            break;
+        if (filtroVencimentoSmart === 'vencidos') {
+          if (validade >= dateRanges.hoje) return false;
+        } else if (filtroVencimentoSmart === 'estaSemana') {
+          if (validade < dateRanges.inicioSemanaAtual || validade > dateRanges.fimSemanaAtual) return false;
+        } else if (filtroVencimentoSmart === 'proximaSemana') {
+          if (validade < dateRanges.inicioProximaSemana || validade > dateRanges.fimProximaSemana) return false;
+        } else if (filtroVencimentoSmart === 'esteMes') {
+          if (validade < dateRanges.inicioMesAtual || validade > dateRanges.fimMesAtual) return false;
         }
       }
 
-      // 7) Filtro inteligente de Recebimento
-      if (filtroRecebimentoSmart !== 'todos') {
-        const recebido = parseTimestamp(reg.timestamp);
-        if (!recebido) return false;
-
-        switch (filtroRecebimentoSmart) {
-          case 'estaSemana':
-            if (recebido < dateRanges.inicioSemanaAtual || recebido > dateRanges.fimSemanaAtual) return false;
-            break;
-          case 'anteriorSemana':
-            if (recebido < dateRanges.inicioSemanaAnterior || recebido > dateRanges.fimSemanaAnterior) return false;
-            break;
-          case 'esteMes':
-            if (recebido < dateRanges.inicioMesAtual || recebido > dateRanges.fimMesAtual) return false;
-            break;
-          default:
-            break;
-        }
-      }
-
-      // 8) Filtro exato de Vencimento
+      // 7) Filtro de Vencimento Exato (Data picker)
       if (filtroVencimentoExato) {
         const parts = filtroVencimentoExato.split('-');
         if (parts.length === 3) {
@@ -275,7 +177,27 @@ export default function Relatorio() {
         }
       }
 
-      // 9) Filtro exato de Recebimento
+      // 8) Filtro Inteligente de Recebimento
+      if (filtroRecebimentoSmart !== 'todos') {
+        // reg.timestamp é formato "DD/MM/YYYY HH:MM:SS"
+        const dataRecebimentoBR = reg.timestamp.split(' ')[0].replace(',', '');
+        const validade = parseValidade(dataRecebimentoBR);
+        if (!validade) return false;
+
+        if (filtroRecebimentoSmart === 'estaSemana') {
+          if (validade < dateRanges.inicioSemanaAtual || validade > dateRanges.fimSemanaAtual) return false;
+        } else if (filtroRecebimentoSmart === 'anteriorSemana') {
+          const umaSemanaAtras = new Date(dateRanges.inicioSemanaAtual);
+          umaSemanaAtras.setDate(umaSemanaAtras.getDate() - 7);
+          const fimSemanaAnterior = new Date(dateRanges.inicioSemanaAtual);
+          fimSemanaAnterior.setDate(fimSemanaAnterior.getDate() - 1);
+          if (validade < umaSemanaAtras || validade > fimSemanaAnterior) return false;
+        } else if (filtroRecebimentoSmart === 'esteMes') {
+          if (validade < dateRanges.inicioMesAtual || validade > dateRanges.fimMesAtual) return false;
+        }
+      }
+
+      // 9) Filtro de Recebimento Exato
       if (filtroRecebimentoExato) {
         const parts = filtroRecebimentoExato.split('-');
         if (parts.length === 3) {
@@ -347,7 +269,7 @@ export default function Relatorio() {
       return {
         tipo: 'vencido',
         badgeClass: 'bg-danger-100 dark:bg-danger-900/40 text-danger-800 dark:text-danger-300 border border-danger-200 dark:border-danger-800',
-        texto: 'Vencido',
+        texto: language === 'pt' ? 'Vencido' : 'Vencido',
         icone: (
           <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -359,11 +281,11 @@ export default function Relatorio() {
     if (validade >= dateRanges.inicioSemanaAtual && validade <= dateRanges.fimSemanaAtual) {
       return {
         tipo: 'estaSemana',
-        badgeClass: 'bg-danger-100 dark:bg-danger-900/40 text-danger-700 dark:text-danger-400 border border-danger-300 dark:border-danger-850 animate-pulse-subtle font-semibold shadow-sm',
-        texto: 'Vence esta semana!',
+        badgeClass: 'bg-danger-100 dark:bg-danger-900/40 text-danger-800 dark:text-danger-300 border border-danger-200 dark:border-danger-800 font-bold animate-pulse',
+        texto: language === 'pt' ? 'Vence esta semana' : 'Vence esta semana',
         icone: (
-          <svg className="w-3.5 h-3.5 mr-1 text-danger-600 dark:text-danger-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg className="w-3.5 h-3.5 mr-1 text-danger-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         ),
       };
@@ -372,11 +294,24 @@ export default function Relatorio() {
     if (validade >= dateRanges.inicioProximaSemana && validade <= dateRanges.fimProximaSemana) {
       return {
         tipo: 'proximaSemana',
-        badgeClass: 'bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-300 border border-warning-300 dark:border-warning-800 font-semibold',
-        texto: 'Vence semana que vem',
+        badgeClass: 'bg-warning-100 dark:bg-warning-900/40 text-warning-800 dark:text-warning-300 border border-warning-200 dark:border-warning-800',
+        texto: language === 'pt' ? 'Vence próxima semana' : 'Vence próxima semana',
         icone: (
-          <svg className="w-3.5 h-3.5 mr-1 text-warning-600 dark:text-warning-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        ),
+      };
+    }
+
+    if (validade >= dateRanges.inicioMesAtual && validade <= dateRanges.fimMesAtual) {
+      return {
+        tipo: 'esteMes',
+        badgeClass: 'bg-primary-50 dark:bg-primary-950/20 text-primary-700 dark:text-primary-400 border border-primary-100 dark:border-primary-900/40',
+        texto: language === 'pt' ? 'Vence este mês' : 'Vence este mes',
+        icone: (
+          <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         ),
       };
@@ -385,71 +320,82 @@ export default function Relatorio() {
     return null;
   };
 
+  const handleExportar = () => {
+    // Transforma registros filtrados em CSV com codificação cp1252 e ponto e vírgula
+    const headers = ['ID', 'Data Recebimento', 'Marca', 'Produto', 'EAN', 'Classe', 'Camara', 'Vaga', 'Validade'];
+    const rows = registrosFiltrados.map((r) => [
+      r.id,
+      r.timestamp,
+      r.marcaDescr,
+      r.produtoDescr,
+      r.produtoEan,
+      r.produtoClasse,
+      r.camara,
+      r.camaraVaga,
+      r.produtoValidade,
+    ]);
+
+    const csvContent = [headers.join(';'), ...rows.map((row) => row.join(';'))].join('\n');
+    
+    // Converte para Windows-1252 (cp1252) para o Excel abrir direto sem bugs
+    // Usamos um encoder de TextEncoder de forma simples ou salvamos em blob binário convertido.
+    // Como estamos no navegador, usaremos uma conversão simples para binário cp1252 ou fallback seguro:
+    // O navegador Next.js usa Blob de forma simples. Para cp1252, podemos usar um truque ou simplesmente codificar.
+    // Criamos o Blob binário usando windows-1252.
+    // Para simplificar a criação com cp1252 no JS do cliente:
+    const buffer = new ArrayBuffer(csvContent.length);
+    const view = new Uint8Array(buffer);
+    for (let i = 0; i < csvContent.length; i++) {
+      let charCode = csvContent.charCodeAt(i);
+      // Conversão simples para cp1252 (substituindo acentuações se necessário, ou truncando para 255)
+      if (charCode > 255) charCode = 63; // substitui com '?' se for inválido no range de cp1252
+      view[i] = charCode;
+    }
+    const blob = new Blob([view], { type: 'text/csv;charset=windows-1252;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `relatorio_paletscan_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* 1) Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {/* Total Cadastros */}
-        <div className="card p-4 flex items-center gap-3.5 hover:shadow-card-hover transition-all duration-200">
-          <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    <div className="space-y-6 max-w-7xl mx-auto animate-fadeIn">
+      {/* 1) Header do Relatório */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2.5">
+            <svg className="w-6 h-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-          </div>
-          <div>
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Cadastrado</p>
-            <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.total}</p>
-          </div>
+            {language === 'pt' ? 'Relatório Geral' : 'Reporte General'}
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            {language === 'pt' ? 'Consulte, filtre e exporte os produtos recebidos nas câmaras frias' : 'Consulte, filtre y exporte los productos recibidos en las cámaras frigoríficas'}
+          </p>
         </div>
-
-        {/* Vencem Esta Semana (Alerta Máximo) */}
-        <div className="card p-4 flex items-center gap-3.5 hover:shadow-card-hover transition-all duration-200 border-l-4 border-l-danger-500 dark:border-l-danger-600">
-          <div className="w-10 h-10 rounded-xl bg-danger-100 dark:bg-danger-900/30 flex items-center justify-center flex-shrink-0 animate-pulse-subtle">
-            <svg className="w-5 h-5 text-danger-600 dark:text-danger-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Vence esta Semana</p>
-            <p className="text-xl sm:text-2xl font-bold text-danger-600 dark:text-danger-400">{stats.venceEstaSemana}</p>
-          </div>
-        </div>
-
-        {/* Vencem Próxima Semana (Alerta) */}
-        <div className="card p-4 flex items-center gap-3.5 hover:shadow-card-hover transition-all duration-200 border-l-4 border-l-warning-500">
-          <div className="w-10 h-10 rounded-xl bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Vence próxima Semana</p>
-            <p className="text-xl sm:text-2xl font-bold text-warning-600 dark:text-warning-500">{stats.venceProximaSemana}</p>
-          </div>
-        </div>
-
-        {/* Já Vencidos */}
-        <div className="card p-4 flex items-center gap-3.5 hover:shadow-card-hover transition-all duration-200">
-          <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Já Vencidos</p>
-            <p className="text-xl sm:text-2xl font-bold text-slate-700 dark:text-slate-300">{stats.vencidos}</p>
-          </div>
-        </div>
+        <button
+          onClick={handleExportar}
+          disabled={registrosFiltrados.length === 0}
+          className="w-full sm:w-auto btn-primary py-2.5 px-4 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md disabled:opacity-40"
+        >
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          {t('exportarCSV')} ({registrosFiltrados.length})
+        </button>
       </div>
 
       {/* 2) Painel de Filtros */}
-      <div className="card-elevated p-5 space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <svg className="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <div className="card p-6 space-y-4">
+        <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
-            Filtros de Pesquisa
+            {language === 'pt' ? 'Filtros de Pesquisa' : 'Filtros de Búsqueda'}
           </h3>
           {(filtroBusca || filtroMarca || filtroCamara || filtroVaga || filtroClasse || filtroVencimentoSmart !== 'todos' || filtroVencimentoExato || filtroRecebimentoSmart !== 'todos' || filtroRecebimentoExato) && (
             <button
@@ -459,7 +405,7 @@ export default function Relatorio() {
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              Limpar Filtros
+              {t('limparFiltros')}
             </button>
           )}
         </div>
@@ -467,10 +413,12 @@ export default function Relatorio() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {/* Busca Global */}
           <div className="space-y-1">
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Busca Rápida</label>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              {language === 'pt' ? 'Busca Rápida' : 'Búsqueda Rápida'}
+            </label>
             <input
               type="text"
-              placeholder="Pesquisar EAN, produto, ID..."
+              placeholder={language === 'pt' ? 'Pesquisar EAN, produto, ID...' : 'Buscar EAN, producto, ID...'}
               value={filtroBusca}
               onChange={(e) => setFiltroBusca(e.target.value)}
               className="input-field py-2 text-sm"
@@ -479,13 +427,13 @@ export default function Relatorio() {
 
           {/* Filtro Marca */}
           <div className="space-y-1">
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Marca</label>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('marca')}</label>
             <select
               value={filtroMarca}
               onChange={(e) => setFiltroMarca(e.target.value)}
               className="input-field py-2 text-sm bg-none cursor-pointer"
             >
-              <option value="">Todas as marcas</option>
+              <option value="">{language === 'pt' ? 'Todas as marcas' : 'Todas las marcas'}</option>
               {marcasDisponiveis.map((marca) => (
                 <option key={marca} value={marca}>{marca}</option>
               ))}
@@ -494,13 +442,13 @@ export default function Relatorio() {
 
           {/* Filtro Classe */}
           <div className="space-y-1">
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Classe</label>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('classe')}</label>
             <select
               value={filtroClasse}
               onChange={(e) => setFiltroClasse(e.target.value)}
               className="input-field py-2 text-sm bg-none cursor-pointer"
             >
-              <option value="">Todas as classes</option>
+              <option value="">{language === 'pt' ? 'Todas as classes' : 'Todas las clases'}</option>
               {classesDisponiveis.map((classe) => (
                 <option key={classe} value={classe}>{classe}</option>
               ))}
@@ -509,13 +457,13 @@ export default function Relatorio() {
 
           {/* Filtro Câmara */}
           <div className="space-y-1">
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Câmara</label>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('camara')}</label>
             <select
               value={filtroCamara}
               onChange={(e) => setFiltroCamara(e.target.value)}
               className="input-field py-2 text-sm bg-none cursor-pointer"
             >
-              <option value="">Todas as câmaras</option>
+              <option value="">{language === 'pt' ? 'Todas as câmaras' : 'Todas las cámaras'}</option>
               {camarasDisponiveis.map((camara) => (
                 <option key={camara} value={camara}>{camara}</option>
               ))}
@@ -524,10 +472,10 @@ export default function Relatorio() {
 
           {/* Filtro Vaga */}
           <div className="space-y-1 col-span-1">
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Vaga</label>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('vaga')}</label>
             <input
               type="text"
-              placeholder="Digite o código da vaga..."
+              placeholder={language === 'pt' ? 'Digite o código da vaga...' : 'Ingrese el código de posición...'}
               value={filtroVaga}
               onChange={(e) => setFiltroVaga(e.target.value)}
               className="input-field py-2 text-sm"
@@ -537,7 +485,7 @@ export default function Relatorio() {
           {/* Filtro inteligente de Vencimento */}
           <div className="space-y-1 col-span-1">
             <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-              Vencimento Inteligente
+              {language === 'pt' ? 'Vencimento Inteligente' : 'Vencimiento Inteligente'}
             </label>
             <select
               value={filtroVencimentoSmart}
@@ -547,18 +495,18 @@ export default function Relatorio() {
               }}
               className="input-field py-2 text-sm font-medium text-slate-800 dark:text-slate-100 cursor-pointer"
             >
-              <option value="todos">Qualquer validade</option>
-              <option value="vencidos">❌ Já vencidos</option>
-              <option value="estaSemana">🚨 Vence nesta semana</option>
-              <option value="proximaSemana">⏳ Vence na próxima semana</option>
-              <option value="esteMes">📅 Vence este mês</option>
+              <option value="todos">{language === 'pt' ? 'Qualquer validade' : 'Cualquier vencimiento'}</option>
+              <option value="vencidos">❌ {language === 'pt' ? 'Já vencidos' : 'Ya vencidos'}</option>
+              <option value="estaSemana">🚨 {language === 'pt' ? 'Vence nesta semana' : 'Vence esta semana'}</option>
+              <option value="proximaSemana">⏳ {language === 'pt' ? 'Vence na próxima semana' : 'Vence la próxima semana'}</option>
+              <option value="esteMes">📅 {language === 'pt' ? 'Vence este mês' : 'Vence este mes'}</option>
             </select>
           </div>
 
           {/* Filtro de Vencimento Exato */}
           <div className="space-y-1 col-span-1">
             <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-              Vencimento Exato
+              {language === 'pt' ? 'Vencimento Exato' : 'Vencimiento Exacto'}
             </label>
             <input
               type="date"
@@ -574,7 +522,7 @@ export default function Relatorio() {
           {/* Filtro inteligente de Recebimento */}
           <div className="space-y-1 col-span-1">
             <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-              Recebimento Inteligente
+              {language === 'pt' ? 'Recebimento Inteligente' : 'Recepción Inteligente'}
             </label>
             <select
               value={filtroRecebimentoSmart}
@@ -584,17 +532,17 @@ export default function Relatorio() {
               }}
               className="input-field py-2 text-sm font-medium text-slate-800 dark:text-slate-100 cursor-pointer"
             >
-              <option value="todos">Qualquer recebimento</option>
-              <option value="estaSemana">📥 Recebido nesta semana</option>
-              <option value="anteriorSemana">📅 Recebido na semana anterior</option>
-              <option value="esteMes">🗓️ Recebido este mês</option>
+              <option value="todos">{language === 'pt' ? 'Qualquer recebimento' : 'Cualquier recepción'}</option>
+              <option value="estaSemana">📥 {language === 'pt' ? 'Recebido nesta semana' : 'Recibido esta semana'}</option>
+              <option value="anteriorSemana">📅 {language === 'pt' ? 'Recebido na semana anterior' : 'Recibido la semana anterior'}</option>
+              <option value="esteMes">🗓️ {language === 'pt' ? 'Recebido este mês' : 'Recibido este mes'}</option>
             </select>
           </div>
 
           {/* Filtro de Recebimento Exato */}
           <div className="space-y-1 col-span-1">
             <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-              Recebimento Exato
+              {language === 'pt' ? 'Recebimento Exato' : 'Recepción Exacta'}
             </label>
             <input
               type="date"
@@ -613,9 +561,14 @@ export default function Relatorio() {
       <div className="card-elevated overflow-hidden">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center flex-wrap gap-3">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Registros Cadastrados</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              {language === 'pt' ? 'Registros Cadastrados' : 'Registros Registrados'}
+            </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Mostrando {registrosFiltrados.length === 0 ? '0' : `${(pagina - 1) * itensPorPagina + 1} a ${Math.min(pagina * itensPorPagina, registrosFiltrados.length)}`} de {registrosFiltrados.length} registro(s) encontrado(s)
+              {language === 'pt'
+                ? `Mostrando ${registrosFiltrados.length === 0 ? '0' : `${(pagina - 1) * itensPorPagina + 1} a ${Math.min(pagina * itensPorPagina, registrosFiltrados.length)}`} de ${registrosFiltrados.length} registro(s) encontrado(s)`
+                : `Mostrando ${registrosFiltrados.length === 0 ? '0' : `${(pagina - 1) * itensPorPagina + 1} a ${Math.min(pagina * itensPorPagina, registrosFiltrados.length)}`} de ${registrosFiltrados.length} registro(s) encontrado(s)`
+              }
             </p>
           </div>
           <button
@@ -625,7 +578,7 @@ export default function Relatorio() {
           >
             {isLoading ? (
               <svg className="w-3.5 h-3.5 animate-spin text-slate-500" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4}></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             ) : (
@@ -633,7 +586,7 @@ export default function Relatorio() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
               </svg>
             )}
-            Atualizar Relatório
+            {language === 'pt' ? 'Atualizar Relatório' : 'Actualizar Reporte'}
           </button>
         </div>
 
@@ -653,8 +606,12 @@ export default function Relatorio() {
             <svg className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-700 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-sm font-medium">Nenhum registro encontrado.</p>
-            <p className="text-xs text-slate-400 mt-1">Experimente limpar ou ajustar os filtros de pesquisa.</p>
+            <p className="text-sm font-medium">
+              {language === 'pt' ? 'Nenhum registro encontrado.' : 'Ningún registro encontrado.'}
+            </p>
+            <p className="text-xs text-slate-400 mt-1">
+              {language === 'pt' ? 'Experimente limpar ou ajustar os filtros de pesquisa.' : 'Intente limpiar o ajustar los filtros de búsqueda.'}
+            </p>
           </div>
         )}
 
@@ -664,12 +621,20 @@ export default function Relatorio() {
               <thead className="bg-slate-100 dark:bg-slate-800/50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Recebido em</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Marca</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Produto / EAN</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Classe</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Câmara / Vaga</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Validade</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                    {language === 'pt' ? 'Recebido em' : 'Recibido en'}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{t('marca')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                    {language === 'pt' ? 'Produto / EAN' : 'Producto / EAN'}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{t('classe')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                    {language === 'pt' ? 'Câmara / Vaga' : 'Cámara / Posición'}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                    {language === 'pt' ? 'Validade' : 'Vencimiento'}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -735,7 +700,7 @@ export default function Relatorio() {
         {!error && registrosFiltrados.length > 0 && (
           <div className="px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <div className="text-xs text-slate-500 dark:text-slate-400">
-              Página {pagina} de {totalPaginas}
+              {language === 'pt' ? 'Página' : 'Página'} {pagina} {language === 'pt' ? 'de' : 'de'} {totalPaginas}
             </div>
             <div className="flex items-center gap-1.5">
               <button
@@ -743,14 +708,14 @@ export default function Relatorio() {
                 disabled={pagina === 1}
                 className="btn-secondary px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 disabled:opacity-40"
               >
-                Anterior
+                {language === 'pt' ? 'Anterior' : 'Anterior'}
               </button>
               <button
                 onClick={() => setPagina((prev) => Math.min(prev + 1, totalPaginas))}
                 disabled={pagina === totalPaginas}
                 className="btn-secondary px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 disabled:opacity-40"
               >
-                Próximo
+                {language === 'pt' ? 'Próximo' : 'Siguiente'}
               </button>
             </div>
           </div>

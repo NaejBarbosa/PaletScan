@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface DataValidadeInputProps {
   ean: string;
@@ -7,6 +8,7 @@ interface DataValidadeInputProps {
 }
 
 export default function DataValidadeInput({ ean, onConfirm, onCancel }: DataValidadeInputProps) {
+  const { language, t } = useLanguage();
   const [dia, setDia] = useState('');
   const [mes, setMes] = useState('');
   const [ano, setAno] = useState('');
@@ -35,12 +37,12 @@ export default function DataValidadeInput({ ean, onConfirm, onCancel }: DataVali
     const a = parseInt(ano, 10);
 
     if (isNaN(d) || isNaN(m) || isNaN(a)) {
-      setErro('Preencha todos os campos');
+      setErro(language === 'pt' ? 'Preencha todos os campos' : 'Complete todos los campos');
       return;
     }
 
     if (!isValidDate(a, m, d)) {
-      setErro('Data invalida. Verifique dia, mes e ano');
+      setErro(language === 'pt' ? 'Data inválida. Verifique dia, mês e ano' : 'Fecha inválida. Verifique día, mes y año');
       return;
     }
 
@@ -94,8 +96,12 @@ export default function DataValidadeInput({ ean, onConfirm, onCancel }: DataVali
               </svg>
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Inserir Validade</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">EAN detectado sem data de vencimento</p>
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                {language === 'pt' ? 'Inserir Validade' : 'Ingresar Vencimiento'}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {language === 'pt' ? 'EAN detectado sem data de vencimento' : 'EAN detectado sin fecha de vencimiento'}
+              </p>
             </div>
           </div>
         </div>
@@ -111,7 +117,7 @@ export default function DataValidadeInput({ ean, onConfirm, onCancel }: DataVali
         {/* Date Inputs */}
         <div className="px-5 pb-4">
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-3">
-            Data de Vencimento
+            {t('dataVencimento')}
           </label>
 
           <div className="flex items-center justify-center gap-1 sm:gap-2">
@@ -129,7 +135,9 @@ export default function DataValidadeInput({ ean, onConfirm, onCancel }: DataVali
                 maxLength={2}
                 aria-label="Dia"
               />
-              <span className="block text-center text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium uppercase tracking-wide">Dia</span>
+              <span className="block text-center text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium uppercase tracking-wide">
+                {language === 'pt' ? 'Dia' : 'Día'}
+              </span>
             </div>
 
             {/* Separator */}
@@ -151,7 +159,9 @@ export default function DataValidadeInput({ ean, onConfirm, onCancel }: DataVali
                 maxLength={2}
                 aria-label="Mês"
               />
-              <span className="block text-center text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium uppercase tracking-wide">Mês</span>
+              <span className="block text-center text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium uppercase tracking-wide">
+                {language === 'pt' ? 'Mês' : 'Mes'}
+              </span>
             </div>
 
             {/* Separator */}
@@ -173,7 +183,9 @@ export default function DataValidadeInput({ ean, onConfirm, onCancel }: DataVali
                 maxLength={4}
                 aria-label="Ano"
               />
-              <span className="block text-center text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium uppercase tracking-wide">Ano</span>
+              <span className="block text-center text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium uppercase tracking-wide">
+                {language === 'pt' ? 'Ano' : 'Año'}
+              </span>
             </div>
           </div>
 
@@ -197,7 +209,7 @@ export default function DataValidadeInput({ ean, onConfirm, onCancel }: DataVali
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
-            Confirmar Validade
+            {language === 'pt' ? 'Confirmar Validade' : 'Confirmar Vencimiento'}
           </button>
           <button
             onClick={onCancel}
@@ -206,7 +218,7 @@ export default function DataValidadeInput({ ean, onConfirm, onCancel }: DataVali
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
-            Cancelar
+            {t('cancelar')}
           </button>
         </div>
       </div>

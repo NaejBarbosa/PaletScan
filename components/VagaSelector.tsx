@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { CAMARAS, VAGAS } from '../lib/config';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface VagaSelectorProps {
   onConfirm: (camara: string, vaga: string) => void;
@@ -8,6 +9,7 @@ interface VagaSelectorProps {
 
 export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
   const { theme, toggleTheme } = useTheme();
+  const { language, t } = useLanguage();
   const [camaraSelecionada, setCamaraSelecionada] = useState<string>('');
   const [vagaSelecionada, setVagaSelecionada] = useState<string>('');
   const [buscaVaga, setBuscaVaga] = useState<string>('');
@@ -72,7 +74,7 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
 
         {/* Header do card */}
         <div className="card-elevated overflow-hidden">
-          <div className="bg-gradient-to-br from-primary-600 to-primary-800 p-6 text-white">
+          <div className="bg-gradient-to-br from-primary-500 to-indigo-600 p-6 text-white animate-pulse-subtle">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -84,8 +86,12 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold">Selecionar Destino</h1>
-                  <p className="text-primary-200 text-sm">Câmara e vaga para esta sessão</p>
+                  <h1 className="text-xl font-bold">
+                    {language === 'pt' ? 'Selecionar Destino' : 'Seleccionar Destino'}
+                  </h1>
+                  <p className="text-primary-200 text-sm">
+                    {language === 'pt' ? 'Câmara e vaga para esta sessão' : 'Cámara y posición para esta sesión'}
+                  </p>
                 </div>
               </div>
 
@@ -113,7 +119,7 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
             {/* Seleção de Câmara */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                Câmara
+                {t('camara')}
               </label>
               <div className="grid grid-cols-1 gap-2">
                 {CAMARAS.map((camara) => {
@@ -161,7 +167,7 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
             {/* Seleção de Vaga */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                Vaga
+                {t('vaga')}
               </label>
 
               {/* Campo de busca */}
@@ -175,7 +181,7 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
                 <input
                   id="busca-vaga"
                   type="text"
-                  placeholder="Buscar vaga... ex: A10"
+                  placeholder={language === 'pt' ? 'Buscar vaga... ex: A10' : 'Buscar posición... ej: A10'}
                   value={buscaVaga}
                   onChange={(e) => setBuscaVaga(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
@@ -186,7 +192,7 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
               <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2">
                 {vagasFiltradas.length === 0 ? (
                   <p className="text-center text-slate-400 dark:text-slate-500 text-sm py-4">
-                    Nenhuma vaga encontrada
+                    {language === 'pt' ? 'Nenhuma vaga encontrada' : 'Ninguna posición encontrada'}
                   </p>
                 ) : (
                   <div className="grid grid-cols-4 gap-1.5">
@@ -221,7 +227,7 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     <span className="text-xs font-medium text-danger-700 dark:text-danger-300">
-                      Esta combinação de câmara e vaga já está sendo utilizada.
+                      {language === 'pt' ? 'Esta combinação de câmara e vaga já está sendo utilizada.' : 'Esta combinación de cámara y posición ya está en uso.'}
                     </span>
                   </div>
                 ) : (
@@ -231,7 +237,9 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                         clipRule="evenodd" />
                     </svg>
-                    <span>Vaga selecionada: <strong>{vagaSelecionada}</strong></span>
+                    <span>
+                      {language === 'pt' ? 'Vaga selecionada' : 'Posición seleccionada'}: <strong>{vagaSelecionada}</strong>
+                    </span>
                   </div>
                 )
               )}
@@ -241,14 +249,14 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
             {podeConfirmar && (
               <div className="bg-slate-100 dark:bg-slate-800/60 rounded-xl p-4 space-y-1 border border-slate-200 dark:border-slate-700">
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
-                  Resumo da Sessão
+                  {language === 'pt' ? 'Resumo da Sessão' : 'Resumen de la Sesión'}
                 </p>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Câmara</span>
+                  <span className="text-slate-500 dark:text-slate-400">{t('camara')}</span>
                   <span className="font-semibold text-slate-900 dark:text-slate-100">{camaraSelecionada}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Vaga</span>
+                  <span className="text-slate-500 dark:text-slate-400">{t('vaga')}</span>
                   <span className="font-semibold text-slate-900 dark:text-slate-100">{vagaSelecionada}</span>
                 </div>
               </div>
@@ -271,7 +279,10 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {podeConfirmar ? 'Confirmar e Iniciar Scanner' : 'Selecione câmara e vaga'}
+              {podeConfirmar 
+                ? (language === 'pt' ? 'Confirmar e Iniciar Scanner' : 'Confirmar e Iniciar Lector') 
+                : (language === 'pt' ? 'Selecione câmara e vaga' : 'Seleccione cámara y posición')
+              }
             </button>
 
           </div>
@@ -279,7 +290,10 @@ export default function VagaSelector({ onConfirm }: VagaSelectorProps) {
 
         {/* Rodapé informativo */}
         <p className="text-center text-xs text-slate-400 dark:text-slate-600 mt-4">
-          A câmara e vaga ficam fixas durante toda a sessão de escaneamento
+          {language === 'pt' 
+            ? 'A câmara e vaga ficam fixas durante toda a sessão de escaneamento' 
+            : 'La cámara y posición quedan fijas durante toda la sesión de escaneo'
+          }
         </p>
       </div>
     </div>

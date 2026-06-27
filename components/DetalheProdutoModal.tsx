@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import ProdutoAvatar from './ProdutoAvatar';
 import { ProdutoValido, WatchlistItem } from './PesquisaProduto';
+import { useLanguage } from '../context/LanguageContext';
 
 interface DetalheProdutoModalProps {
   produto: ProdutoValido;
@@ -23,6 +24,7 @@ export default function DetalheProdutoModal({
   onClose,
   onVincularDun,
 }: DetalheProdutoModalProps) {
+  const { language, t } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
 
@@ -55,42 +57,44 @@ export default function DetalheProdutoModal({
         {!showQRCode ? (
           <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 space-y-3">
             <div className="flex justify-between items-start gap-4 text-xs">
-              <span className="font-medium text-slate-500 dark:text-slate-400">Produto</span>
+              <span className="font-medium text-slate-500 dark:text-slate-400">{t('produto')}</span>
               <span className="text-slate-900 dark:text-slate-100 text-right font-bold">{produto.produtoDescr}</span>
             </div>
             <div className="flex justify-between items-start gap-4 text-xs">
-              <span className="font-medium text-slate-500 dark:text-slate-400">Marca</span>
+              <span className="font-medium text-slate-500 dark:text-slate-400">{t('marca')}</span>
               <span className="text-slate-900 dark:text-slate-100 text-right">{produto.marcaDescr}</span>
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="font-medium text-slate-500 dark:text-slate-400">Classe</span>
+              <span className="font-medium text-slate-500 dark:text-slate-400">{t('classe')}</span>
               <span className="badge badge-primary">{produto.produtoClasse}</span>
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="font-medium text-slate-500 dark:text-slate-400">Conservação</span>
+              <span className="font-medium text-slate-500 dark:text-slate-400">{t('conservacao')}</span>
               <span className={`badge ${
                 produto.produtoConservacao?.toLowerCase().includes('congelado')
                   ? 'badge-primary'
                   : 'badge-warning'
               }`}>
-                {produto.produtoConservacao || 'Não definida'}
+                {produto.produtoConservacao || (language === 'pt' ? 'Não definida' : 'No definida')}
               </span>
             </div>
             <div className="flex justify-between items-start gap-4 text-xs border-t border-slate-200 dark:border-slate-700 pt-3 mt-3">
-              <span className="font-medium text-slate-500 dark:text-slate-400">EAN (Consumidor)</span>
+              <span className="font-medium text-slate-500 dark:text-slate-400">{t('eanConsumidor')}</span>
               <span className="font-mono text-slate-900 dark:text-slate-100 text-right font-semibold">{produto.produtoEan}</span>
             </div>
             <div className="flex justify-between items-start gap-4 text-xs">
-              <span className="font-medium text-slate-500 dark:text-slate-400">DUN (Distribuição)</span>
+              <span className="font-medium text-slate-500 dark:text-slate-400">{t('dunDistribuicao')}</span>
               {produto.produtoDun ? (
                 <span className="font-mono text-slate-900 dark:text-slate-100 text-right font-semibold">{produto.produtoDun}</span>
               ) : (
-                <span className="text-slate-400 dark:text-slate-500 text-right italic font-normal">Não cadastrado</span>
+                <span className="text-slate-400 dark:text-slate-500 text-right italic font-normal">
+                  {language === 'pt' ? 'Não cadastrado' : 'No registrado'}
+                </span>
               )}
             </div>
             {validade && (
               <div className="flex justify-between items-center gap-4 text-xs border-t border-dashed border-slate-200 dark:border-slate-700 pt-3 mt-2 overflow-visible">
-                <span className="font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Data de Vencimento</span>
+                <span className="font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">{t('dataVencimento')}</span>
                 {(() => {
                   const checkIsVencido = (dateStr: string | null): boolean => {
                     if (!dateStr) return false;
@@ -108,7 +112,7 @@ export default function DetalheProdutoModal({
                     <div className="relative overflow-visible flex items-center justify-end">
                       <span className="absolute -inset-1 rounded bg-red-500 animate-ping opacity-75" />
                       <span className="relative font-mono text-white bg-red-600 px-2.5 py-1 rounded font-bold border border-red-700 text-xs shadow-md animate-pulse whitespace-nowrap">
-                        🚨 {validade} (VENCIDO)
+                        🚨 {validade} ({language === 'pt' ? 'VENCIDO' : 'VENCIDO'})
                       </span>
                     </div>
                   ) : (
@@ -124,7 +128,7 @@ export default function DetalheProdutoModal({
           /* QR Code grande e centralizado */
           <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center justify-center animate-scale-in">
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-4">
-              Escaneie com o Rub para consultar o estoque
+              {language === 'pt' ? 'Escaneie com o Rub para consultar o estoque' : 'Escanee con el Rub para consultar el stock'}
             </p>
             <div className="p-3 bg-white border-2 border-slate-100 dark:border-slate-800 rounded-xl shadow-inner">
               <QRCodeSVG
@@ -153,7 +157,7 @@ export default function DetalheProdutoModal({
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
-              Gerar QR Code (EAN)
+              {language === 'pt' ? 'Gerar QR Code (EAN)' : 'Generar código QR (EAN)'}
             </button>
           ) : (
             <button
@@ -163,7 +167,7 @@ export default function DetalheProdutoModal({
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Voltar para os Detalhes
+              {language === 'pt' ? 'Voltar para os Detalhes' : 'Volver a los Detalles'}
             </button>
           )}
 
@@ -192,14 +196,14 @@ export default function DetalheProdutoModal({
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
-                Remover da Lista de Procurados
+                {language === 'pt' ? 'Remover da Lista de Procurados' : 'Eliminar de la Lista de Buscados'}
               </>
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.243.58 1.8l-3.968 2.89a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.977-2.89a1 1 0 00-1.175 0l-3.979 2.89c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.98 9.87c-.779-.557-.38-1.8.58-1.8h4.907a1 1 0 00.95-.69l1.52-4.674z" />
                 </svg>
-                Adicionar à Lista de Procurados
+                {language === 'pt' ? 'Adicionar à Lista de Procurados' : 'Agregar a la Lista de Buscados'}
               </>
             )}
           </button>
@@ -208,7 +212,7 @@ export default function DetalheProdutoModal({
             onClick={onClose}
             className="btn-secondary w-full text-sm font-semibold"
           >
-            Fechar
+            {language === 'pt' ? 'Fechar' : 'Cerrar'}
           </button>
         </div>
       </div>

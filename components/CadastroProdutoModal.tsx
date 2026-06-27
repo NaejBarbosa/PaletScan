@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import * as fuzzball from 'fuzzball';
 import Scanner from './Scanner';
 import { extrairDados } from '../lib/regex';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Brand {
   marcaId: string;
@@ -132,6 +133,8 @@ export default function CadastroProdutoModal({
   onClose,
   onSuccess
 }: CadastroProdutoModalProps) {
+  const { language, t } = useLanguage();
+
   const [eanInput, setEanInput] = useState(initialProdutoParaVincular ? initialProdutoParaVincular.produtoEan : initialEan);
   const [dunInput, setDunInput] = useState(initialDun);
   const [marcaId, setMarcaId] = useState(initialProdutoParaVincular ? initialProdutoParaVincular.marcaId : '');
@@ -280,7 +283,7 @@ export default function CadastroProdutoModal({
   const handleScanDetected = (text: string) => {
     const dados = extrairDados(text);
     if (!dados) {
-      setErrorMsg('Formato de código inválido ou não reconhecido.');
+      setErrorMsg(language === 'pt' ? 'Formato de código inválido ou não reconhecido.' : 'Formato de código inválido o no reconocido.');
       setActiveScanField(null);
       return;
     }
@@ -289,7 +292,7 @@ export default function CadastroProdutoModal({
 
     if (activeScanField === 'ean') {
       if (!ean) {
-        setErrorMsg('Nenhum EAN válido foi detectado neste código.');
+        setErrorMsg(language === 'pt' ? 'Nenhum EAN válido foi detectado neste código.' : 'No se detectó ningún EAN válido en este código.');
         setActiveScanField(null);
         return;
       }
@@ -298,12 +301,12 @@ export default function CadastroProdutoModal({
         // Fluxo de Vinculação: o produto DEVE existir na base e NÃO ter DUN cadastrado
         const produtoExistente = produtosValidos.find(p => p.produtoEan === ean);
         if (!produtoExistente) {
-          setErrorMsg(`O EAN ${ean} não foi encontrado na base de produtos.`);
+          setErrorMsg(language === 'pt' ? `O EAN ${ean} não foi encontrado na base de produtos.` : `El EAN ${ean} no fue encontrado en la base de productos.`);
           setActiveScanField(null);
           return;
         }
         if (produtoExistente.produtoDun) {
-          setErrorMsg(`O produto correspondente ao EAN ${ean} já possui o DUN ${produtoExistente.produtoDun} vinculado.`);
+          setErrorMsg(language === 'pt' ? `O produto correspondente ao EAN ${ean} já possui o DUN ${produtoExistente.produtoDun} vinculado.` : `El producto correspondiente al EAN ${ean} ya tiene el DUN ${produtoExistente.produtoDun} vinculado.`);
           setActiveScanField(null);
           return;
         }
@@ -314,7 +317,7 @@ export default function CadastroProdutoModal({
         // Fluxo de Cadastro Manual Novo: o EAN NÃO deve existir na base
         const jaExiste = produtosValidos.some(p => p.produtoEan === ean);
         if (jaExiste) {
-          setErrorMsg(`O EAN ${ean} já está cadastrado na base.`);
+          setErrorMsg(language === 'pt' ? `O EAN ${ean} já está cadastrado na base.` : `El EAN ${ean} ya está registrado en la base.`);
           setActiveScanField(null);
           return;
         }
@@ -323,14 +326,14 @@ export default function CadastroProdutoModal({
       }
     } else if (activeScanField === 'dun') {
       if (!dun) {
-        setErrorMsg('Nenhum DUN válido foi detectado neste código.');
+        setErrorMsg(language === 'pt' ? 'Nenhum DUN válido foi detectado neste código.' : 'No se detectó ningún DUN válido en este código.');
         setActiveScanField(null);
         return;
       }
       // Valida se DUN já existe na base
       const jaExiste = produtosValidos.some(p => p.produtoDun === dun);
       if (jaExiste) {
-        setErrorMsg(`O DUN ${dun} já está cadastrado na base.`);
+        setErrorMsg(language === 'pt' ? `O DUN ${dun} já está cadastrado na base.` : `El DUN ${dun} ya está registrado en la base.`);
         setActiveScanField(null);
         return;
       }
@@ -347,37 +350,37 @@ export default function CadastroProdutoModal({
     // Validações básicas
     if (vincularDun) {
       if (!produtoSelecionado) {
-        setErrorMsg('Você precisa selecionar um produto elegível para realizar a vinculação.');
+        setErrorMsg(language === 'pt' ? 'Você precisa selecionar um produto elegível para realizar a vinculação.' : 'Debe seleccionar un producto elegible para realizar la vinculación.');
         return;
       }
       if (!dunInput.trim()) {
-        setErrorMsg('O código DUN é obrigatório para a vinculação.');
+        setErrorMsg(language === 'pt' ? 'O código DUN é obrigatório para a vinculação.' : 'El código DUN es obligatorio para la vinculación.');
         return;
       }
     } else {
       if (!eanInput.trim() || !dunInput.trim() || !marcaId || !produtoClasse || !produtoConservacao || !produtoDescr.trim()) {
-        setErrorMsg('Todos os campos são de preenchimento obrigatório.');
+        setErrorMsg(language === 'pt' ? 'Todos os campos são de preenchimento obrigatório.' : 'Todos los campos son obligatorios.');
         return;
       }
     }
 
     // Validação de formato numérico
     if (!/^\d+$/.test(eanInput)) {
-      setErrorMsg('O EAN deve conter apenas números.');
+      setErrorMsg(language === 'pt' ? 'O EAN deve conter apenas números.' : 'El EAN debe contener solo números.');
       return;
     }
     if (!/^\d+$/.test(dunInput)) {
-      setErrorMsg('O DUN deve conter apenas números.');
+      setErrorMsg(language === 'pt' ? 'O DUN deve conter apenas números.' : 'El DUN debe contener solo números.');
       return;
     }
 
     // Validação de dígitos
     if (eanInput.length !== 8 && eanInput.length !== 13) {
-      setErrorMsg('O EAN deve ter 8 ou 13 dígitos.');
+      setErrorMsg(language === 'pt' ? 'O EAN deve ter 8 ou 13 dígitos.' : 'El EAN debe tener 8 o 13 dígitos.');
       return;
     }
     if (dunInput.length !== 14) {
-      setErrorMsg('O DUN deve ter exatamente 14 dígitos.');
+      setErrorMsg(language === 'pt' ? 'O DUN deve ter exatamente 14 dígitos.' : 'El DUN debe tener exactamente 14 dígitos.');
       return;
     }
 
@@ -385,13 +388,13 @@ export default function CadastroProdutoModal({
     if (!vincularDun) {
       const eanExiste = produtosValidos.some(p => p.produtoEan === eanInput && p.produtoEan !== initialEan);
       if (eanExiste) {
-        setErrorMsg(`O EAN ${eanInput} já está cadastrado na base.`);
+        setErrorMsg(language === 'pt' ? `O EAN ${eanInput} já está cadastrado na base.` : `El EAN ${eanInput} ya está registrado en la base.`);
         return;
       }
     }
     const dunExiste = produtosValidos.some(p => p.produtoDun === dunInput && p.produtoDun !== initialDun);
     if (dunExiste) {
-      setErrorMsg(`O DUN ${dunInput} já está cadastrado na base.`);
+      setErrorMsg(language === 'pt' ? `O DUN ${dunInput} já está cadastrado na base.` : `El DUN ${dunInput} ya está registrado en la base.`);
       return;
     }
 
@@ -417,7 +420,7 @@ export default function CadastroProdutoModal({
       });
 
       if (!res.ok) {
-        let errMsg = 'Erro ao salvar no servidor.';
+        let errMsg = language === 'pt' ? 'Erro ao salvar no servidor.' : 'Error al guardar en el servidor.';
         try {
           const errorData = await res.json();
           if (errorData && errorData.error) {
@@ -429,7 +432,7 @@ export default function CadastroProdutoModal({
 
       onSuccess(novoProduto, vincularDun);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Erro ao salvar o produto. Tente novamente.');
+      setErrorMsg(err.message || (language === 'pt' ? 'Erro ao salvar o produto. Tente novamente.' : 'Error al guardar el producto. Inténtelo de nuevo.'));
     } finally {
       setIsSaving(false);
     }
@@ -446,10 +449,10 @@ export default function CadastroProdutoModal({
               </svg>
             </div>
             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">
-              Cadastrar Produto Não Identificado
+              {language === 'pt' ? 'Cadastrar Produto Não Identificado' : 'Registrar Producto No Identificado'}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto">
-              Preencha as especificações para registrar na base do Google Sheets.
+              {language === 'pt' ? 'Preencha as especificações para registrar na base do Google Sheets.' : 'Complete las especificaciones para registrar en la base de Google Sheets.'}
             </p>
           </div>
 
@@ -468,7 +471,7 @@ export default function CadastroProdutoModal({
               {/* EAN */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
-                  Produto EAN <span className="text-red-500">*</span>
+                  {language === 'pt' ? 'Produto EAN' : 'Producto EAN'} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -507,7 +510,7 @@ export default function CadastroProdutoModal({
                             <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
                             </svg>
-                            Usar Câmera
+                            {language === 'pt' ? 'Usar Câmera' : 'Usar Cámara'}
                           </button>
                           <button
                             type="button"
@@ -521,7 +524,7 @@ export default function CadastroProdutoModal({
                             <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            Buscar Galeria
+                            {language === 'pt' ? 'Buscar Galeria' : 'Buscar Galería'}
                           </button>
                         </div>
                       )}
@@ -533,7 +536,7 @@ export default function CadastroProdutoModal({
               {/* DUN */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
-                  Produto DUN <span className="text-red-500">*</span>
+                  {language === 'pt' ? 'Produto DUN' : 'Producto DUN'} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -571,7 +574,7 @@ export default function CadastroProdutoModal({
                             <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
                             </svg>
-                            Usar Câmera
+                            {language === 'pt' ? 'Usar Câmera' : 'Usar Cámara'}
                           </button>
                           <button
                             type="button"
@@ -585,7 +588,7 @@ export default function CadastroProdutoModal({
                             <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l2.586-2.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            Buscar Galeria
+                            {language === 'pt' ? 'Buscar Galeria' : 'Buscar Galería'}
                           </button>
                         </div>
                       )}
@@ -600,10 +603,10 @@ export default function CadastroProdutoModal({
               <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/80 transition-all duration-300">
                 <div className="flex flex-col pr-3">
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
-                    Vincular DUN a EAN Cadastrado
+                    {language === 'pt' ? 'Vincular DUN a EAN Cadastrado' : 'Vincular DUN a EAN Registrado'}
                   </span>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
-                    Associar este código DUN a um produto da base que não possui DUN
+                    {language === 'pt' ? 'Associar este código DUN a um produto da base que não possui DUN' : 'Asociar este código DUN a un producto de la base que no posee DUN'}
                   </span>
                 </div>
                 <button
@@ -626,12 +629,12 @@ export default function CadastroProdutoModal({
             {vincularDun && !produtoSelecionado && (
               <div className="space-y-3 animate-fadeIn">
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1">
-                  Pesquisa Avançada do Produto <span className="text-red-500">*</span>
+                  {language === 'pt' ? 'Pesquisa Avançada do Produto' : 'Búsqueda Avanzada del Producto'} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Busque por marca, descrição ou classe (mínimo 2 letras)..."
+                    placeholder={language === 'pt' ? 'Busque por marca, descrição ou classe (mínimo 2 letras)...' : 'Busque por marca, descripción o clase (mínimo 2 letras)...'}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full px-4 py-2.5 pl-10 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:border-primary-500 transition-all text-sm text-slate-900 dark:text-slate-100"
@@ -661,7 +664,9 @@ export default function CadastroProdutoModal({
                         </button>
                       ))
                     ) : (
-                      <p className="px-4 py-2.5 text-xs text-slate-400 dark:text-slate-500">Nenhum produto sem DUN encontrado.</p>
+                      <p className="px-4 py-2.5 text-xs text-slate-400 dark:text-slate-500">
+                        {language === 'pt' ? 'Nenhum produto sem DUN encontrado.' : 'Ningún producto sin DUN encontrado.'}
+                      </p>
                     )}
                   </div>
                 )}
@@ -672,7 +677,9 @@ export default function CadastroProdutoModal({
             {vincularDun && produtoSelecionado && (
               <div className="p-3.5 bg-primary-50 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800 rounded-xl flex items-center justify-between animate-fadeIn">
                 <div className="min-w-0 flex-1 pr-3">
-                  <span className="text-[10px] uppercase font-bold text-primary-600 dark:text-primary-400">Produto Elegível Selecionado</span>
+                  <span className="text-[10px] uppercase font-bold text-primary-600 dark:text-primary-400">
+                    {language === 'pt' ? 'Produto Elegível Selecionado' : 'Producto Elegible Seleccionado'}
+                  </span>
                   <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate mt-0.5">{produtoSelecionado.produtoDescr}</h4>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{produtoSelecionado.marcaDescr} · EAN: {produtoSelecionado.produtoEan}</p>
                 </div>
@@ -684,7 +691,7 @@ export default function CadastroProdutoModal({
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Alterar
+                  {language === 'pt' ? 'Alterar' : 'Cambiar'}
                 </button>
               </div>
             )}
@@ -696,7 +703,7 @@ export default function CadastroProdutoModal({
                 {vincularDun ? (
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
-                      Marca
+                      {t('marca')}
                     </label>
                     <input
                       type="text"
@@ -707,8 +714,8 @@ export default function CadastroProdutoModal({
                   </div>
                 ) : (
                   <SearchableSelect
-                    label="Marca"
-                    placeholder="Pesquisar ou selecionar marca..."
+                    label={t('marca')}
+                    placeholder={language === 'pt' ? 'Pesquisar ou selecionar marca...' : 'Buscar o seleccionar marca...'}
                     options={marcaOptions}
                     value={marcaId}
                     required={true}
@@ -723,7 +730,7 @@ export default function CadastroProdutoModal({
                 {vincularDun ? (
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
-                      Classe
+                      {t('classe')}
                     </label>
                     <input
                       type="text"
@@ -734,8 +741,8 @@ export default function CadastroProdutoModal({
                   </div>
                 ) : (
                   <SearchableSelect
-                    label="Classe"
-                    placeholder="Pesquisar ou selecionar classe..."
+                    label={t('classe')}
+                    placeholder={language === 'pt' ? 'Pesquisar ou selecionar classe...' : 'Buscar o seleccionar clase...'}
                     options={classeOptions}
                     value={produtoClasse}
                     required={true}
@@ -747,7 +754,7 @@ export default function CadastroProdutoModal({
                 {vincularDun ? (
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
-                      Conservação
+                      {t('conservacao')}
                     </label>
                     <input
                       type="text"
@@ -758,8 +765,8 @@ export default function CadastroProdutoModal({
                   </div>
                 ) : (
                   <SearchableSelect
-                    label="Conservação"
-                    placeholder="Pesquisar ou selecionar conservação..."
+                    label={t('conservacao')}
+                    placeholder={language === 'pt' ? 'Pesquisar ou selecionar conservação...' : 'Buscar o seleccionar conservación...'}
                     options={conservacaoOptions}
                     value={produtoConservacao}
                     required={true}
@@ -770,7 +777,7 @@ export default function CadastroProdutoModal({
                 {/* DESCRIÇÃO PRODUTO */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
-                    Descrição do Produto {!vincularDun && <span className="text-red-500">*</span>}
+                    {language === 'pt' ? 'Descrição do Produto' : 'Descripción del Producto'} {!vincularDun && <span className="text-red-500">*</span>}
                   </label>
                   <textarea
                     value={produtoDescr}
@@ -792,7 +799,7 @@ export default function CadastroProdutoModal({
               disabled={isSaving}
               className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-all text-sm"
             >
-              Descartar
+              {language === 'pt' ? 'Cancelar' : 'Cancelar'}
             </button>
             <button
               onClick={handleGravar}
@@ -805,14 +812,17 @@ export default function CadastroProdutoModal({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Gravando...
+                  {language === 'pt' ? 'Gravando...' : 'Guardando...'}
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  Gravar Dados
+                  {vincularDun 
+                    ? (language === 'pt' ? 'Confirmar Vinculação' : 'Confirmar Vinculación')
+                    : (language === 'pt' ? 'Gravar no Sheets' : 'Guardar en Sheets')
+                  }
                 </>
               )}
             </button>

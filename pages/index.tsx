@@ -594,15 +594,18 @@ function HomeContent() {
                     </div>
                     <div>
                       <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                        Produtos Adicionados
+                        {language === 'pt' ? 'Produtos Adicionados' : 'Productos Agregados'}
                       </h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {itensRegistrados.length} item(ns) aguardando gravação
+                        {language === 'pt' 
+                          ? `${itensRegistrados.length} item(ns) aguardando gravação` 
+                          : `${itensRegistrados.length} artículo(s) esperando grabación`
+                        }
                       </p>
                     </div>
                   </div>
                   <button onClick={gravarTodosNoBanco} disabled={isSubmitting} className="btn-success">
-                    {isSubmitting ? 'Gravando...' : 'Gravar Todos'}
+                    {isSubmitting ? (language === 'pt' ? 'Gravando...' : 'Guardando...') : (language === 'pt' ? 'Gravar Todos' : 'Guardar Todos')}
                   </button>
                 </div>
 
@@ -610,12 +613,12 @@ function HomeContent() {
                   <table className="w-full table-auto border-separate border-spacing-0">
                     <thead className="bg-slate-100 dark:bg-slate-800/50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Marca</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Produto</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Classe</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Conservação</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Validade</th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Ações</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{t('marca')}</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{t('produto')}</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{t('classe')}</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{t('conservacao')}</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{language === 'pt' ? 'Validade' : 'Vencimiento'}</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{language === 'pt' ? 'Ações' : 'Acciones'}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -690,20 +693,20 @@ function HomeContent() {
 
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 mb-5 space-y-3">
               <div className="flex justify-between items-start gap-4 text-xs">
-                <span className="font-medium text-slate-500 dark:text-slate-400">Produto</span>
+                <span className="font-medium text-slate-500 dark:text-slate-400">{t('produto')}</span>
                 <span className="text-slate-900 dark:text-slate-100 text-right font-bold">{confirmacao.produto.produtoDescr}</span>
               </div>
               <div className="flex justify-between items-start gap-4 text-xs">
-                <span className="font-medium text-slate-500 dark:text-slate-400">Marca</span>
+                <span className="font-medium text-slate-500 dark:text-slate-400">{t('marca')}</span>
                 <span className="text-slate-900 dark:text-slate-100 text-right">{confirmacao.produto.marcaDescr}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="font-medium text-slate-500 dark:text-slate-400">Classe</span>
+                <span className="font-medium text-slate-500 dark:text-slate-400">{t('classe')}</span>
                 <span className="badge badge-primary">{confirmacao.produto.produtoClasse}</span>
               </div>
               {confirmacao.produto.produtoConservacao && (
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-slate-500 dark:text-slate-400">Conservação</span>
+                  <span className="font-medium text-slate-500 dark:text-slate-400">{t('conservacao')}</span>
                   <span className={`badge ${
                     confirmacao.produto.produtoConservacao.toLowerCase().includes('congelado') 
                       ? 'badge-primary' 
@@ -714,20 +717,20 @@ function HomeContent() {
                 </div>
               )}
               <div className="flex justify-between items-start gap-4 text-xs border-t border-slate-200 dark:border-slate-700 pt-3 mt-3">
-                <span className="font-medium text-slate-500 dark:text-slate-400">EAN (Consumidor)</span>
+                <span className="font-medium text-slate-500 dark:text-slate-400">{t('eanConsumidor')}</span>
                 <span className="font-mono text-slate-900 dark:text-slate-100 text-right font-semibold">{confirmacao.ean}</span>
               </div>
               <div className="flex justify-between items-start gap-4 text-xs">
-                <span className="font-medium text-slate-500 dark:text-slate-400">DUN (Distribuição)</span>
+                <span className="font-medium text-slate-500 dark:text-slate-400">{t('dunDistribuicao')}</span>
                 {confirmacao.dun ? (
                   <span className="font-mono text-slate-900 dark:text-slate-100 text-right font-semibold">{confirmacao.dun}</span>
                 ) : (
-                  <span className="text-slate-400 dark:text-slate-500 text-right italic font-normal">Não cadastrado</span>
+                  <span className="text-slate-400 dark:text-slate-500 text-right italic font-normal">{language === 'pt' ? 'Não cadastrado' : 'No registrado'}</span>
                 )}
               </div>
               {confirmacao.validade && (
                 <div className="flex justify-between items-center gap-4 text-xs border-t border-dashed border-slate-200 dark:border-slate-700 pt-3 mt-2 overflow-visible">
-                  <span className="font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Data de Vencimento</span>
+                  <span className="font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">{t('dataVencimento')}</span>
                   {(() => {
                     const checkIsVencido = (dateStr: string | null): boolean => {
                       if (!dateStr) return false;
@@ -745,7 +748,7 @@ function HomeContent() {
                       <div className="relative overflow-visible flex items-center justify-end">
                         <span className="absolute -inset-1 rounded bg-red-500 animate-ping opacity-75" />
                         <span className="relative font-mono text-white bg-red-600 px-2.5 py-1 rounded font-bold border border-red-700 text-xs shadow-md animate-pulse whitespace-nowrap">
-                          🚨 {confirmacao.validade} (VENCIDO)
+                          🚨 {confirmacao.validade} ({language === 'pt' ? 'VENCIDO' : 'VENCIDO'})
                         </span>
                       </div>
                     ) : (
@@ -763,14 +766,14 @@ function HomeContent() {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                Adicionar a Lista
+                {language === 'pt' ? 'Adicionar à Lista' : 'Agregar a la Lista'}
               </button>
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={handleNovaLeitura} className="btn-secondary">
-                  Nova Leitura
+                  {language === 'pt' ? 'Nova Leitura' : 'Nueva Lectura'}
                 </button>
                 <button onClick={handleDescartar} className="btn-danger">
-                  Descartar
+                  {language === 'pt' ? 'Descartar' : 'Descartar'}
                 </button>
               </div>
             </div>
