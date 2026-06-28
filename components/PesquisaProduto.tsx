@@ -586,7 +586,7 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
 
       {/* Toast flutuante para feedback */}
       {toast && (
-        <div className="fixed inset-x-0 bottom-6 z-[110] flex justify-center items-center px-4 pointer-events-none">
+        <div className="fixed inset-x-0 top-6 z-[110] flex justify-center items-center px-4 pointer-events-none">
           <div className={`pointer-events-auto flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border max-w-md w-full sm:w-auto animate-toast ${
             toast.type === 'success'
               ? 'bg-white dark:bg-slate-900 border-success-300 dark:border-success-800 text-success-700 dark:text-success-400'

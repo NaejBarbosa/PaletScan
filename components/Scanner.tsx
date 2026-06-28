@@ -278,7 +278,7 @@ export default function Scanner({
     <div className="relative">
       {/* Debug Message */}
       {debugMessage && (
-        <div className="fixed inset-x-0 bottom-6 z-[110] flex justify-center items-center px-4 pointer-events-none animate-slideUp">
+        <div className="fixed inset-x-0 top-6 z-[110] flex justify-center items-center px-4 pointer-events-none animate-slideUp">
           <div className="pointer-events-auto inline-flex items-center gap-3 px-6 py-3.5 bg-slate-900/95 dark:bg-slate-950 text-white rounded-2xl shadow-elevated backdrop-blur-sm text-sm font-medium whitespace-nowrap max-w-full">
             <svg className="w-5 h-5 flex-shrink-0 text-warning-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
