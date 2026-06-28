@@ -129,7 +129,7 @@ export default function DetalheProdutoModal({
             </div>
             <div className="flex justify-between items-center text-xs">
               <span className="font-medium text-slate-500 dark:text-slate-400">{t('classe')}</span>
-              <span className="badge badge-success">{produto.produtoClasse}</span>
+              <span className="badge bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200/50 dark:border-violet-800/30">{produto.produtoClasse}</span>
             </div>
             <div className="flex justify-between items-center text-xs">
               <span className="font-medium text-slate-500 dark:text-slate-400">{t('conservacao')}</span>
