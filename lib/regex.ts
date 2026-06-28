@@ -127,16 +127,15 @@ function extrairDadosDataMatrix(qrData: string) {
  * Extrai DUN e data de validade de uma string GS1 bruta (sem delimitadores)
  */
 export const extrairDadosGS1Bruto = (texto: string): { dun?: string; ean?: string; validade?: string } | null => {
-  // 1. Válvula de Escape (DUN isolado)
+  // 1. Válvula de Escape (DUN isolado manual)
   if (texto.length === 14 && /^\d{14}$/.test(texto)) {
     return { dun: texto, validade: undefined };
   }
 
-  // 2. Busca do DUN (IA 01 ou 02) ancorado no início do bloco de dados
-  const matchDun = texto.match(/(?:^|\]C1|[^0-9])(?:01|02)(\d{14})/);
+  // 2. Busca do DUN (Libertamos a âncora! Agora acha 01 ou 02 in qualquer lugar da string, ignorando prefixos como ]C1 ou pesos colados)
+  const matchDun = texto.match(/(?:01|02)(\d{14})/);
 
-  // 3. Busca da Data (IA 15 ou 17) com Validador de Calendário Estrito
-  // Garante ano [2-3][0-9] (2020-2039), mês (01-12) e dia (01-31).
+  // 3. Busca da Data (Mantém o Calendário Estrito Intacto para anos 2020 a 2039)
   const matchData = texto.match(/(?:17|15)([2-3][0-9](?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01]))/);
 
   let dun = matchDun ? matchDun[1] : undefined;
@@ -150,7 +149,9 @@ export const extrairDadosGS1Bruto = (texto: string): { dun?: string; ean?: strin
     validade = `${dia}/${mes}/${ano}`;
   }
 
+  // Se achou o DUN, a leitura é válida!
   if (dun) return { dun, validade };
+  
   return null;
 };
 
