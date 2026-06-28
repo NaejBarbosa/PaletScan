@@ -118,23 +118,6 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     const newList = watchlist.map((item) => {
       if (item.produtoEan === ean) {
         const nextState = !item.localizado;
-        if (nextState) {
-          // Disparo duplo de confetes laterais
-          confetti({
-            particleCount: 60,
-            spread: 40,
-            origin: { x: 0.3, y: 0.8 },
-            colors: ['#06b6d4', '#6366f1', '#10b981'],
-            zIndex: 9999
-          });
-          confetti({
-            particleCount: 60,
-            spread: 40,
-            origin: { x: 0.7, y: 0.8 },
-            colors: ['#06b6d4', '#6366f1', '#10b981'],
-            zIndex: 9999
-          });
-        }
         return { ...item, localizado: nextState };
       }
       return item;
@@ -289,22 +272,6 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
     if (isMatched) {
       // Dispara confetes e celebração no modal
       setIsMatchCelebration(true);
-      
-      // Show de confetes em leque duplo lateral
-      confetti({
-        particleCount: 100,
-        spread: 60,
-        origin: { x: 0.2, y: 0.65 },
-        colors: ['#06b6d4', '#6366f1', '#10b981'],
-        zIndex: 9999
-      });
-      confetti({
-        particleCount: 100,
-        spread: 60,
-        origin: { x: 0.8, y: 0.65 },
-        colors: ['#06b6d4', '#6366f1', '#10b981'],
-        zIndex: 9999
-      });
       showToast(language === 'pt' ? '⚡ Radar Match! Produto procurado detectado!' : '⚡ ¡Radar Match! ¡Producto buscado detectado!', 'success');
       
       // Auto marca como localizado se escaneado

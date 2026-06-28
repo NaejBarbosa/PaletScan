@@ -761,12 +761,17 @@ function HomeContent() {
 
             {/* Exibição da Imagem do Produto */}
             <div className="mb-4 flex flex-col items-center justify-center">
-              <div className={`relative rounded-2xl overflow-hidden transition-all duration-300 ${
-                isWatchlistMatch 
-                  ? 'ring-4 ring-success-500 shadow-lg shadow-success-500/30 animate-pulse-border' 
-                  : ''
-              }`}>
-                <ProdutoAvatar ean={confirmacao.ean} descricao={confirmacao.produto.produtoDescr} />
+              <div className="relative p-1.5 flex items-center justify-center">
+                {isWatchlistMatch && (
+                  <span className="absolute inset-1.5 rounded-2xl bg-emerald-500 animate-ping opacity-75 pointer-events-none" />
+                )}
+                <div className={`relative rounded-2xl overflow-hidden transition-all duration-300 ${
+                  isWatchlistMatch 
+                    ? 'border-4 border-emerald-500 dark:border-emerald-400 shadow-lg shadow-emerald-500/50 animate-pulse' 
+                    : ''
+                }`}>
+                  <ProdutoAvatar ean={confirmacao.ean} descricao={confirmacao.produto.produtoDescr} />
+                </div>
               </div>
               {isWatchlistMatch && (
                 <p className="text-xs font-black text-success-600 dark:text-success-400 mt-2.5 flex items-center gap-1.5 tracking-wide animate-pulse">
