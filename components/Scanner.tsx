@@ -101,19 +101,24 @@ export default function Scanner({
         if (result && !processing) {
           const text = result.getText();
           if (text) {
-            // 🔒 INTERCEPTADOR 1: Evita erro se o operador bipar APENAS o código da data (15 ou 17)
-            if (/^(?:\]C1)?(?:15|17)[2-3][0-9](?:0[1-9]|1[0-2])/.test(text) && !/(?:01|02)\d{14}/.test(text)) {
-              setDebugMessage('⚠️ Este código tem apenas a data. Foque no código com o DUN (01)!');
-              return; // Mantém a câmera aberta
-            }
-
-            // 🔒 INTERCEPTADOR 2: Trava para DUN Isolado
+            // 1. Trava para DUN Isolado impresso sozinho
             if (text.length === 14 && /^\d{14}$/.test(text)) {
               setDunTemporario(text);
               setDebugMessage('Foque no código maior (com data) ou clique no botão abaixo.');
               return; // Mantém a câmera aberta
             }
 
+            // 2. Filtro de Relevância (Ignora SSCC, Lotes, Datas Isoladas e Lixo)
+            const temDun = /(?:01|02)\d{14}/.test(text);
+            const temEan = /^\d{8}$|^\d{13}$/.test(text);
+            const temPontoVirgula = text.includes(';');
+
+            if (!temDun && !temEan && !temPontoVirgula) {
+              setDebugMessage('Ignorando código irrelevante... Mova para o código principal (01).');
+              return; // MANTÉM A CÂMERA ABERTA procurando o código certo
+            }
+
+            // 3. Se for válido, paralisa e envia para o validador
             stopScanning();
             onDetected(text);
           }
