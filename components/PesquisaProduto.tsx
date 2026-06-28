@@ -123,7 +123,8 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
             particleCount: 80,
             spread: 50,
             origin: { y: 0.8 },
-            colors: ['#06b6d4', '#6366f1', '#10b981']
+            colors: ['#06b6d4', '#6366f1', '#10b981'],
+            zIndex: 9999
           });
         }
         return { ...item, localizado: nextState };
@@ -284,7 +285,8 @@ export default function PesquisaProduto({ produtosValidos, onProdutoCadastrado }
         particleCount: 150,
         spread: 70,
         origin: { y: 0.65 },
-        colors: ['#06b6d4', '#6366f1', '#10b981']
+        colors: ['#06b6d4', '#6366f1', '#10b981'],
+        zIndex: 9999
       });
       showToast(language === 'pt' ? '⚡ Radar Match! Produto procurado detectado!' : '⚡ ¡Radar Match! ¡Producto buscado detectado!', 'success');
       
