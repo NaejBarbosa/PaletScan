@@ -130,7 +130,7 @@ function HomeContent() {
   const checkPendingWatchlist = (ean: string): boolean => {
     if (typeof window === 'undefined') return false;
     try {
-      const saved = localStorage.getItem('radar_watchlist');
+      const saved = localStorage.getItem('watchlist');
       if (saved) {
         const parsed: WatchlistItem[] = JSON.parse(saved);
         return parsed.some((p) => p.produtoEan === ean && !p.localizado);
@@ -174,7 +174,7 @@ function HomeContent() {
         triggerConfetti();
         // Marca como localizado no localStorage do Radar
         try {
-          const saved = localStorage.getItem('radar_watchlist');
+          const saved = localStorage.getItem('watchlist');
           if (saved) {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed)) {
@@ -184,7 +184,7 @@ function HomeContent() {
                 }
                 return item;
               });
-              localStorage.setItem('radar_watchlist', JSON.stringify(newList));
+              localStorage.setItem('watchlist', JSON.stringify(newList));
             }
           }
         } catch (e) {
