@@ -749,36 +749,37 @@ function HomeContent() {
       {/* Modal de confirmação com backdrop corrigido e conservação */}
       {mounted && confirmacao && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
-          <div className={`card-elevated max-w-md w-full p-6 animate-scale-in m-4 relative overflow-hidden ${
+          <div className={`card-elevated max-w-md w-full p-6 animate-scale-in m-4 relative overflow-hidden flex flex-col gap-4 ${
             isWatchlistMatch
-              ? 'border-2 border-success-500 shadow-elevated bg-gradient-to-b from-success-50/10 to-transparent dark:from-success-950/10 ring-4 ring-success-500/20'
+              ? 'border border-emerald-500/30 dark:border-emerald-400/20 shadow-lg shadow-emerald-500/5 bg-gradient-to-b from-emerald-50/5 to-transparent dark:from-emerald-950/5'
               : ''
           }`}>
-            {/* Decoração Especial de Radar Match */}
+            {/* Badge de Destaque Sutil e Elegante no Topo */}
             {isWatchlistMatch && (
-              <div className="absolute top-0 right-0 w-32 h-32 bg-success-500/10 rounded-bl-full pointer-events-none animate-pulse" />
+              <div className="flex justify-center mt-1 mb-2">
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-2 border border-emerald-200/50 dark:border-emerald-800/30 shadow-sm animate-pulse">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span>{language === 'pt' ? 'Produto encontrado!' : '¡Producto encontrado!'}</span>
+                </div>
+              </div>
             )}
 
             {/* Exibição da Imagem do Produto */}
-            <div className="mb-4 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
               <div className="relative p-1.5 flex items-center justify-center">
                 {isWatchlistMatch && (
                   <span className="absolute inset-1.5 rounded-2xl bg-emerald-500 animate-ping opacity-75 pointer-events-none" />
                 )}
-                <div className={`relative rounded-2xl overflow-hidden transition-all duration-300 ${
-                  isWatchlistMatch 
-                    ? 'border-4 border-emerald-500 dark:border-emerald-400 shadow-lg shadow-emerald-500/50 animate-pulse' 
-                    : ''
-                }`}>
+                <div className={isWatchlistMatch 
+                  ? 'relative rounded-2xl overflow-hidden border-4 border-emerald-500 dark:border-emerald-400 shadow-lg shadow-emerald-500/50 animate-pulse transition-all duration-300'
+                  : ''
+                }>
                   <ProdutoAvatar ean={confirmacao.ean} descricao={confirmacao.produto.produtoDescr} />
                 </div>
               </div>
-              {isWatchlistMatch && (
-                <p className="text-xs font-black text-success-600 dark:text-success-400 mt-2.5 flex items-center gap-1.5 tracking-wide animate-pulse">
-                  <span className="inline-block w-2 h-2 rounded-full bg-success-500" />
-                  {language === 'pt' ? 'Produto encontrado!' : '¡Producto encontrado!'}
-                </p>
-              )}
             </div>
 
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 mb-5 space-y-3">
