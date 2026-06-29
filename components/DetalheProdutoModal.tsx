@@ -29,8 +29,7 @@ export default function DetalheProdutoModal({
   const [mounted, setMounted] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
 
-  const isPendingMatch = watchlist.some((w) => w.produtoEan === produto.produtoEan && !w.localizado);
-  const showMatchStyle = isMatchCelebration || isPendingMatch;
+  const showMatchStyle = isMatchCelebration;
 
   const triggerSpectacularConfetti = () => {
     // Primeiro disparo em leque duplo
