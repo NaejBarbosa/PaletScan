@@ -18,7 +18,7 @@ export default function ProdutoAvatar({ ean, descricao }: ProdutoAvatarProps) {
   }, [ean]);
 
   return (
-    <div className="w-full h-64 relative flex items-center justify-center overflow-hidden bg-white rounded-t-xl shrink-0">
+    <div className="w-full h-64 relative flex items-center justify-center overflow-hidden bg-white rounded-xl shrink-0">
       {hasError ? (
         <div className="max-w-full max-h-full flex items-center justify-center text-slate-300 animate-fade-in">
           <Package className="w-20 h-20 stroke-[1.5]" />
