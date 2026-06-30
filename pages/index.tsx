@@ -107,9 +107,11 @@ function HomeContent() {
   const [cadastroNaoIdentificado, setCadastroNaoIdentificado] = useState<{ ean: string; dun: string; validadeTemp?: string } | null>(null);
   const [isRefreshingBase, setIsRefreshingBase] = useState(false);
 
-  const recarregarBase = () => {
-    setIsRefreshingBase(true);
-    fetch('/api/validar')
+  const recarregarBase = (silencioso = false) => {
+    if (!silencioso) {
+      setIsRefreshingBase(true);
+    }
+    return fetch('/api/validar')
       .then((res) => {
         if (!res.ok) throw new Error('Erro ao buscar banco_valida');
         return res.json();
@@ -117,16 +119,32 @@ function HomeContent() {
       .then((data) => {
         if (Array.isArray(data)) {
           setProdutosValidos(data);
+          return data;
         } else {
           console.error('Dados de validar inválidos (não é array):', data);
+          return [];
         }
       })
-      .catch((err) => console.error('Erro ao carregar base', err))
-      .finally(() => setIsRefreshingBase(false));
+      .catch((err) => {
+        console.error('Erro ao carregar base', err);
+        return [];
+      })
+      .finally(() => {
+        if (!silencioso) {
+          setIsRefreshingBase(false);
+        }
+      });
   };
 
   useEffect(() => {
     recarregarBase();
+    
+    // Atualização silenciosa em segundo plano a cada 60 segundos
+    const interval = setInterval(() => {
+      recarregarBase(true);
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const checkPendingWatchlist = (ean: string): boolean => {
@@ -318,7 +336,7 @@ function HomeContent() {
     }
   };
 
-  const processarLeituraComBase = (text: string, baseProdutos: ProdutoValido[]) => {
+  const processarLeituraComBase = async (text: string, baseProdutos: ProdutoValido[]) => {
     const safeBase = Array.isArray(baseProdutos) ? baseProdutos : [];
     const dados = extrairDados(text);
     if (!dados) {
@@ -333,7 +351,19 @@ function HomeContent() {
     let { ean, dun, validade, tipo } = dados;
 
     // ========== CORREÇÃO: Sempre usar os dados da base quando disponíveis ==========
-    const produtoEncontrado = obterProdutoPorCodigo(ean, dun, safeBase);
+    let produtoEncontrado = obterProdutoPorCodigo(ean, dun, safeBase);
+
+    // Se não encontrou o produto localmente, tenta atualizar a base silenciosamente antes de exibir o cadastro
+    if (!produtoEncontrado) {
+      try {
+        const novaBase = await recarregarBase(true);
+        if (novaBase && novaBase.length > 0) {
+          produtoEncontrado = obterProdutoPorCodigo(ean, dun, novaBase);
+        }
+      } catch (err) {
+        console.error('Erro no fallback silencioso ao buscar banco_valida', err);
+      }
+    }
 
     if (!produtoEncontrado) {
       showToast(
@@ -379,9 +409,9 @@ function HomeContent() {
     }
   };
 
-  const handleQRCode = (text: string) => {
+  const handleQRCode = async (text: string) => {
     const baseValida = Array.isArray(produtosValidos) ? produtosValidos : [];
-    processarLeituraComBase(text, baseValida);
+    await processarLeituraComBase(text, baseValida);
   };
 
   const handleValidadeConfirm = (validade: string) => {
