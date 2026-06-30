@@ -13,6 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     produtoDun,
     produtoConservacao,
     produtoDescr,
+    pesarCod,
     vincular,
   } = req.body;
 
@@ -34,19 +35,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       produtoDun || '',
       produtoConservacao,
       produtoDescr,
+      pesarCod || '',
     ];
 
     if (vincular) {
       console.log(`[API Cadastrar Produto] Modo vinculação ativo. Buscando EAN ${produtoEan}...`);
-      const allRows = await getSheetData(sheetId, 'banco_valida!A:G');
+      const allRows = await getSheetData(sheetId, 'banco_valida!A:H');
       // Procura a linha com base no EAN (coluna D, índice 3)
       // allRows[0] é o cabeçalho, então a linha real da planilha é index + 1
       const rowIndex = allRows.findIndex((row, idx) => idx > 0 && row[3] === produtoEan);
 
       if (rowIndex !== -1) {
         const sheetLine = rowIndex + 1;
-        const targetRange = `banco_valida!A${sheetLine}:G${sheetLine}`;
+        const targetRange = `banco_valida!A${sheetLine}:H${sheetLine}`;
         console.log(`[API Cadastrar Produto] EAN localizado na linha ${sheetLine}. Atualizando intervalo ${targetRange}...`);
+        
+        // Mantém o pesarCod existente se o novo estiver vazio e houver valor anterior
+        if (!rowValues[7] && allRows[rowIndex] && allRows[rowIndex][7]) {
+          rowValues[7] = allRows[rowIndex][7];
+        }
+
         const result = await updateRow(sheetId, targetRange, rowValues);
         return res.status(200).json({ success: true, details: result, updatedLine: sheetLine });
       } else {
@@ -55,19 +63,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Para evitar que o Sheets API tente adivinhar as colunas e desvie a gravação 
-    // (ex: gravando em B:H em vez de A:G), nós calculamos a próxima linha livre 
+    // (ex: gravando em B:I em vez de A:H), nós calculamos a próxima linha livre 
     // e gravamos diretamente no intervalo exato usando a função UPDATE.
     
     // Busca os dados da coluna A para saber a quantidade total de linhas
     console.log('[API Cadastrar Produto] Obtendo tamanho atual da planilha...');
     const colAData = await getSheetData(sheetId, 'banco_valida!A:A');
     const nextRow = colAData.length + 1;
-    const targetRange = `banco_valida!A${nextRow}:G${nextRow}`;
+    const targetRange = `banco_valida!A${nextRow}:H${nextRow}`;
 
     console.log(`[API Cadastrar Produto] Gravando na linha ${nextRow} (Intervalo: ${targetRange}) na planilha:`, sheetId);
     console.log('[API Cadastrar Produto] Conteúdo da linha:', JSON.stringify(rowValues));
 
-    // Gravação forçada nas colunas A a G da próxima linha
+    // Gravação forçada nas colunas A a H da próxima linha
     const result = await updateRow(sheetId, targetRange, rowValues);
 
     console.log('[API Cadastrar Produto] Sucesso no Sheets API! Retorno:', JSON.stringify(result));

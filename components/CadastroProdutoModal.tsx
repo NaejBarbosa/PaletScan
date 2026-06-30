@@ -409,6 +409,7 @@ export default function CadastroProdutoModal({
         produtoDun: dunInput,
         produtoConservacao,
         produtoDescr,
+        pesarCod: initialProdutoParaVincular?.pesarCod || '',
       };
 
       const res = await fetch('/api/cadastrar-produto', {
