@@ -199,6 +199,16 @@ input, textarea, select {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+select::-ms-expand {
+  display: none !important;
+}
+
 /* Focus styles */
 input:focus,
 textarea:focus,
