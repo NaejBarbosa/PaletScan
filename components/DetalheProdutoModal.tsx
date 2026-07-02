@@ -6,9 +6,7 @@ import ProdutoAvatar from './ProdutoAvatar';
 import { ProdutoValido, WatchlistItem } from './PesquisaProduto';
 import { useLanguage } from '../context/LanguageContext';
 import { getClasseBadgeColor } from '../lib/badgeUtils';
-
-// Opção para ativar ou desativar a funcionalidade de geração de QR Code do produto
-const ENABLE_QRCODE_GENERATION = false;
+import { ENABLE_QRCODE_GENERATION } from '../lib/config';
 
 interface DetalheProdutoModalProps {
   produto: ProdutoValido;

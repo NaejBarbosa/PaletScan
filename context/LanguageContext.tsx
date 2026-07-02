@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { ENABLE_QRCODE_GENERATION } from '../lib/config';
 
 export type Language = 'pt' | 'es';
 
@@ -14,7 +15,9 @@ export const translations = {
     menuRelGeralDesc: 'Consulte todos os produtos já armazenados. Realize buscas avançadas, aplique filtros inteligentes por datas de validade e recebimento, e acompanhe alertas de vencimento.',
     menuViewReports: 'Visualizar Relatórios',
     menuPesquisa: 'Pesquisa e Consulta',
-    menuPesquisaDesc: 'Consulte a ficha técnica de produtos via busca avançada (Fuzzy Search) ou leitura de código EAN/DUN. Gerencie o radar de produtos procurados (Watchlist) e gere QR Codes para integração.',
+    menuPesquisaDesc: ENABLE_QRCODE_GENERATION 
+      ? 'Consulte a ficha técnica de produtos via busca avançada (Fuzzy Search) ou leitura de código EAN/DUN. Gerencie o radar de produtos procurados (Watchlist) e gere QR Codes para integração.'
+      : 'Consulte a ficha técnica de produtos via busca avançada (Fuzzy Search) ou leitura de código EAN/DUN. Gerencie o radar de produtos procurados (Watchlist).',
     menuOpenQuery: 'Abrir Consulta',
 
     // Header & Sessao
@@ -88,7 +91,9 @@ export const translations = {
     menuRelGeralDesc: 'Consulte todos los productos ya almacenados. Realice búsquedas avanzadas, aplique filtros inteligentes por fechas de vencimiento y recepción, y realice el seguimiento de alertas de vencimiento.',
     menuViewReports: 'Ver Reportes',
     menuPesquisa: 'Búsqueda y Consulta',
-    menuPesquisaDesc: 'Consulte la ficha técnica de productos mediante búsqueda avanzada (Fuzzy Search) o lectura de código EAN/DUN. Gestione el radar de productos buscados (Watchlist) y genere códigos QR para su integración.',
+    menuPesquisaDesc: ENABLE_QRCODE_GENERATION
+      ? 'Consulte la ficha técnica de productos mediante búsqueda avanzada (Fuzzy Search) o lectura de código EAN/DUN. Gestione el radar de productos buscados (Watchlist) y genere códigos QR para su integración.'
+      : 'Consulte la ficha técnica de productos mediante búsqueda avanzada (Fuzzy Search) o lectura de código EAN/DUN. Gestione el radar de productos buscados (Watchlist).',
     menuOpenQuery: 'Abrir Consulta',
 
     // Header & Sessao

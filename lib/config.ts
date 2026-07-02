@@ -20,3 +20,7 @@ export const VAGAS: string[] = [
   "B40D","B40E","B41D","B41E","B42D","B42E","B43D","B43E",
   "B50D","B50E","B51D","B51E","B52D","B52E","B53D","B53E",
 ];
+
+// Opção para ativar ou desativar a funcionalidade de geração de QR Code do produto
+export const ENABLE_QRCODE_GENERATION = false;
+
